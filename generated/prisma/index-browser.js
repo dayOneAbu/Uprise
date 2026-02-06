@@ -147,6 +147,8 @@ exports.Prisma.CompanyScalarFieldEnum = {
   name: 'name',
   slug: 'slug',
   logoUrl: 'logoUrl',
+  website: 'website',
+  description: 'description',
   aiCredits: 'aiCredits',
   createdAt: 'createdAt'
 };

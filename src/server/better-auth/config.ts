@@ -40,6 +40,9 @@ export const auth = betterAuth({
       badge: {
         type: "string",
       },
+      companyId: {
+        type: "string",
+      },
     },
   },
 });

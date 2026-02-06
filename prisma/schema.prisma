@@ -46,14 +46,16 @@ model Profile {
 }
 
 model Company {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  logoUrl   String?
-  aiCredits Int      @default(50)
-  createdAt DateTime @default(now())
-  members   User[]
-  jobs      Job[]
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logoUrl     String?
+  website     String?
+  description String?
+  aiCredits   Int      @default(50)
+  createdAt   DateTime @default(now())
+  members     User[]
+  jobs        Job[]
 }
 
 model Job {

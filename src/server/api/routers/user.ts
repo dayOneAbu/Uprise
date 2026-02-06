@@ -7,18 +7,17 @@ import {
     publicProcedure,
     adminProcedure,
 } from "~/server/api/trpc";
-import { UserRole, Badge } from "~/generated/prisma";
-
-// ============================================================================
-// VALIDATION SCHEMAS
-// ============================================================================
+import { UserRole } from "~/generated/prisma";
 
 
 
-const updateUserSchema = z.object({
-    name: z.string().min(2).max(100).optional(),
-    image: z.string().url().optional().or(z.literal("")),
-});
+
+import {
+    updateUserSchema,
+    setRoleSchema,
+    adminListUsersSchema,
+    listCandidatesSchema
+} from "~/lib/schemas";
 
 // ============================================================================
 // USER ROUTER
@@ -120,13 +119,12 @@ export const userRouter = createTRPCRouter({
         }),
 
 
-
     // --------------------------------------------------------------------------
     // SET ROLE (Protected - One Time)
     // Allows new users to set their role to CANDIDATE or EMPLOYER
     // --------------------------------------------------------------------------
     setRole: protectedProcedure
-        .input(z.object({ role: z.enum([UserRole.CANDIDATE, UserRole.EMPLOYER]) }))
+        .input(setRoleSchema)
         .mutation(async ({ ctx, input }) => {
             const user = await ctx.db.user.findUnique({
                 where: { id: ctx.session.user.id },
@@ -157,13 +155,11 @@ export const userRouter = createTRPCRouter({
     // ADMIN LIST USERS (Admin Only)
     // --------------------------------------------------------------------------
     adminListUsers: adminProcedure
-        .input(z.object({
-            limit: z.number().min(1).max(100).default(50),
-            cursor: z.string().optional(),
-            role: z.nativeEnum(UserRole).optional(),
-            search: z.string().optional(),
-        }))
+        .input(adminListUsersSchema)
         .query(async ({ ctx, input }) => {
+            // ...
+            // Logic remains same, schema handles defaults
+            const limit = input.limit ?? 50; // Fallback if schema default fails or manual override needed
             const users = await ctx.db.user.findMany({
                 where: {
                     role: input.role,
@@ -172,13 +168,13 @@ export const userRouter = createTRPCRouter({
                         { email: { contains: input.search } }
                     ] : undefined,
                 },
-                take: input.limit + 1,
+                take: limit + 1,
                 cursor: input.cursor ? { id: input.cursor } : undefined,
                 orderBy: { createdAt: 'desc' },
             });
 
             let nextCursor: string | undefined = undefined;
-            if (users.length > input.limit) {
+            if (users.length > limit) {
                 const nextItem = users.pop();
                 nextCursor = nextItem?.id;
             }
@@ -189,32 +185,13 @@ export const userRouter = createTRPCRouter({
             };
         }),
 
-    // --------------------------------------------------------------------------
-    // ADMIN TOGGLE BAN (Admin Only)
-    // Note: We don't have a specific "BANNED" state but we can perhaps use 
-    // a separate flag or repurpose UNASSIGNED if really needed, but usually 
-    // this would need a `banned` or `status` field.
-    // For now, let's assume we might implement this later or use a different mechanism.
-    // I'll skip toggleBan for now as schema support isn't explicit for "BANNED" 
-    // vs "Job Suspended" etc. 
-    // Use `deleteAccount` for severe actions.
-    // --------------------------------------------------------------------------
-
 
     // --------------------------------------------------------------------------
     // LIST CANDIDATES (Employer only)
     // Browse candidates by reputation for hiring
     // --------------------------------------------------------------------------
     listCandidates: protectedProcedure
-        .input(
-            z.object({
-                limit: z.number().min(1).max(100).default(20),
-                cursor: z.string().optional(), // For pagination
-                minSuccessRate: z.number().min(0).max(100).optional(),
-                badge: z.nativeEnum(Badge).optional(),
-                skills: z.string().optional(), // Search in skills
-            })
-        )
+        .input(listCandidatesSchema)
         .query(async ({ ctx, input }) => {
             // Only employers and admins can browse candidates
             if (ctx.session.user.role !== UserRole.EMPLOYER && ctx.session.user.role !== UserRole.ADMIN) {

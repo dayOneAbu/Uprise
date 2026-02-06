@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import {
     createTRPCRouter,
     protectedProcedure,
@@ -8,12 +6,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { UserRole } from "../../../../generated/prisma";
 
-// Validation schema for company
-const companySchema = z.object({
-    name: z.string().min(2).max(100),
-    slug: z.string().min(2).max(100).regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with dashes"),
-    logoUrl: z.string().url().optional().or(z.literal("")),
-});
+import { companySchema, updateCompanySchema, paginationSchema, bySlugSchema } from "~/lib/schemas";
 
 export const companyRouter = createTRPCRouter({
     // --------------------------------------------------------------------------
@@ -47,6 +40,8 @@ export const companyRouter = createTRPCRouter({
                     name: input.name,
                     slug: input.slug,
                     logoUrl: input.logoUrl ?? null,
+                    website: input.website ?? null,
+                    description: input.description ?? null,
                     members: {
                         connect: { id: ctx.session.user.id },
                     },
@@ -70,7 +65,7 @@ export const companyRouter = createTRPCRouter({
     // GET COMPANY (Public)
     // --------------------------------------------------------------------------
     get: publicProcedure
-        .input(z.object({ slug: z.string() }))
+        .input(bySlugSchema)
         .query(async ({ ctx, input }) => {
             const company = await ctx.db.company.findUnique({
                 where: { slug: input.slug },
@@ -99,7 +94,7 @@ export const companyRouter = createTRPCRouter({
     // UPDATE COMPANY (Protected - Member Only)
     // --------------------------------------------------------------------------
     update: protectedProcedure
-        .input(companySchema.partial().extend({ id: z.string() }))
+        .input(updateCompanySchema)
         .mutation(async ({ ctx, input }) => {
             // Verify membership
             const user = await ctx.db.user.findUnique({
@@ -119,6 +114,8 @@ export const companyRouter = createTRPCRouter({
                     name: input.name,
                     slug: input.slug,
                     logoUrl: input.logoUrl,
+                    website: input.website,
+                    description: input.description,
                 }
             });
 
@@ -129,10 +126,7 @@ export const companyRouter = createTRPCRouter({
     // LIST COMPANIES (Public)
     // --------------------------------------------------------------------------
     list: publicProcedure
-        .input(z.object({
-            limit: z.number().min(1).max(50).default(20),
-            cursor: z.string().optional(),
-        }))
+        .input(paginationSchema)
         .query(async ({ ctx, input }) => {
             const companies = await ctx.db.company.findMany({
                 take: input.limit + 1,
@@ -150,5 +144,18 @@ export const companyRouter = createTRPCRouter({
                 companies,
                 nextCursor,
             };
+        }),
+
+    // --------------------------------------------------------------------------
+    // GET MY COMPANY (Protected - Employer)
+    // --------------------------------------------------------------------------
+    getMine: protectedProcedure
+        .query(async ({ ctx }) => {
+            if (!ctx.session.user.companyId) {
+                return null;
+            }
+            return ctx.db.company.findUnique({
+                where: { id: ctx.session.user.companyId },
+            });
         }),
 });

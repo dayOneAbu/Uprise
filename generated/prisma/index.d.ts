@@ -4427,6 +4427,8 @@ export namespace Prisma {
     name: string | null
     slug: string | null
     logoUrl: string | null
+    website: string | null
+    description: string | null
     aiCredits: number | null
     createdAt: Date | null
   }
@@ -4436,6 +4438,8 @@ export namespace Prisma {
     name: string | null
     slug: string | null
     logoUrl: string | null
+    website: string | null
+    description: string | null
     aiCredits: number | null
     createdAt: Date | null
   }
@@ -4445,6 +4449,8 @@ export namespace Prisma {
     name: number
     slug: number
     logoUrl: number
+    website: number
+    description: number
     aiCredits: number
     createdAt: number
     _all: number
@@ -4464,6 +4470,8 @@ export namespace Prisma {
     name?: true
     slug?: true
     logoUrl?: true
+    website?: true
+    description?: true
     aiCredits?: true
     createdAt?: true
   }
@@ -4473,6 +4481,8 @@ export namespace Prisma {
     name?: true
     slug?: true
     logoUrl?: true
+    website?: true
+    description?: true
     aiCredits?: true
     createdAt?: true
   }
@@ -4482,6 +4492,8 @@ export namespace Prisma {
     name?: true
     slug?: true
     logoUrl?: true
+    website?: true
+    description?: true
     aiCredits?: true
     createdAt?: true
     _all?: true
@@ -4578,6 +4590,8 @@ export namespace Prisma {
     name: string
     slug: string
     logoUrl: string | null
+    website: string | null
+    description: string | null
     aiCredits: number
     createdAt: Date
     _count: CompanyCountAggregateOutputType | null
@@ -4606,6 +4620,8 @@ export namespace Prisma {
     name?: boolean
     slug?: boolean
     logoUrl?: boolean
+    website?: boolean
+    description?: boolean
     aiCredits?: boolean
     createdAt?: boolean
     members?: boolean | Company$membersArgs<ExtArgs>
@@ -4618,6 +4634,8 @@ export namespace Prisma {
     name?: boolean
     slug?: boolean
     logoUrl?: boolean
+    website?: boolean
+    description?: boolean
     aiCredits?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["company"]>
@@ -4627,6 +4645,8 @@ export namespace Prisma {
     name?: boolean
     slug?: boolean
     logoUrl?: boolean
+    website?: boolean
+    description?: boolean
     aiCredits?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["company"]>
@@ -4636,11 +4656,13 @@ export namespace Prisma {
     name?: boolean
     slug?: boolean
     logoUrl?: boolean
+    website?: boolean
+    description?: boolean
     aiCredits?: boolean
     createdAt?: boolean
   }
 
-  export type CompanyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "logoUrl" | "aiCredits" | "createdAt", ExtArgs["result"]["company"]>
+  export type CompanyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "logoUrl" | "website" | "description" | "aiCredits" | "createdAt", ExtArgs["result"]["company"]>
   export type CompanyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | Company$membersArgs<ExtArgs>
     jobs?: boolean | Company$jobsArgs<ExtArgs>
@@ -4660,6 +4682,8 @@ export namespace Prisma {
       name: string
       slug: string
       logoUrl: string | null
+      website: string | null
+      description: string | null
       aiCredits: number
       createdAt: Date
     }, ExtArgs["result"]["company"]>
@@ -5091,6 +5115,8 @@ export namespace Prisma {
     readonly name: FieldRef<"Company", 'String'>
     readonly slug: FieldRef<"Company", 'String'>
     readonly logoUrl: FieldRef<"Company", 'String'>
+    readonly website: FieldRef<"Company", 'String'>
+    readonly description: FieldRef<"Company", 'String'>
     readonly aiCredits: FieldRef<"Company", 'Int'>
     readonly createdAt: FieldRef<"Company", 'DateTime'>
   }
@@ -13471,6 +13497,8 @@ export namespace Prisma {
     name: 'name',
     slug: 'slug',
     logoUrl: 'logoUrl',
+    website: 'website',
+    description: 'description',
     aiCredits: 'aiCredits',
     createdAt: 'createdAt'
   };
@@ -13839,6 +13867,8 @@ export namespace Prisma {
     name?: StringFilter<"Company"> | string
     slug?: StringFilter<"Company"> | string
     logoUrl?: StringNullableFilter<"Company"> | string | null
+    website?: StringNullableFilter<"Company"> | string | null
+    description?: StringNullableFilter<"Company"> | string | null
     aiCredits?: IntFilter<"Company"> | number
     createdAt?: DateTimeFilter<"Company"> | Date | string
     members?: UserListRelationFilter
@@ -13850,6 +13880,8 @@ export namespace Prisma {
     name?: SortOrder
     slug?: SortOrder
     logoUrl?: SortOrderInput | SortOrder
+    website?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
     aiCredits?: SortOrder
     createdAt?: SortOrder
     members?: UserOrderByRelationAggregateInput
@@ -13864,6 +13896,8 @@ export namespace Prisma {
     NOT?: CompanyWhereInput | CompanyWhereInput[]
     name?: StringFilter<"Company"> | string
     logoUrl?: StringNullableFilter<"Company"> | string | null
+    website?: StringNullableFilter<"Company"> | string | null
+    description?: StringNullableFilter<"Company"> | string | null
     aiCredits?: IntFilter<"Company"> | number
     createdAt?: DateTimeFilter<"Company"> | Date | string
     members?: UserListRelationFilter
@@ -13875,6 +13909,8 @@ export namespace Prisma {
     name?: SortOrder
     slug?: SortOrder
     logoUrl?: SortOrderInput | SortOrder
+    website?: SortOrderInput | SortOrder
+    description?: SortOrderInput | SortOrder
     aiCredits?: SortOrder
     createdAt?: SortOrder
     _count?: CompanyCountOrderByAggregateInput
@@ -13892,6 +13928,8 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"Company"> | string
     slug?: StringWithAggregatesFilter<"Company"> | string
     logoUrl?: StringNullableWithAggregatesFilter<"Company"> | string | null
+    website?: StringNullableWithAggregatesFilter<"Company"> | string | null
+    description?: StringNullableWithAggregatesFilter<"Company"> | string | null
     aiCredits?: IntWithAggregatesFilter<"Company"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Company"> | Date | string
   }
@@ -14645,6 +14683,8 @@ export namespace Prisma {
     name: string
     slug: string
     logoUrl?: string | null
+    website?: string | null
+    description?: string | null
     aiCredits?: number
     createdAt?: Date | string
     members?: UserCreateNestedManyWithoutCompanyInput
@@ -14656,6 +14696,8 @@ export namespace Prisma {
     name: string
     slug: string
     logoUrl?: string | null
+    website?: string | null
+    description?: string | null
     aiCredits?: number
     createdAt?: Date | string
     members?: UserUncheckedCreateNestedManyWithoutCompanyInput
@@ -14667,6 +14709,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     slug?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     aiCredits?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: UserUpdateManyWithoutCompanyNestedInput
@@ -14678,6 +14722,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     slug?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     aiCredits?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: UserUncheckedUpdateManyWithoutCompanyNestedInput
@@ -14689,6 +14735,8 @@ export namespace Prisma {
     name: string
     slug: string
     logoUrl?: string | null
+    website?: string | null
+    description?: string | null
     aiCredits?: number
     createdAt?: Date | string
   }
@@ -14698,6 +14746,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     slug?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     aiCredits?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -14707,6 +14757,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     slug?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     aiCredits?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15658,6 +15710,8 @@ export namespace Prisma {
     name?: SortOrder
     slug?: SortOrder
     logoUrl?: SortOrder
+    website?: SortOrder
+    description?: SortOrder
     aiCredits?: SortOrder
     createdAt?: SortOrder
   }
@@ -15671,6 +15725,8 @@ export namespace Prisma {
     name?: SortOrder
     slug?: SortOrder
     logoUrl?: SortOrder
+    website?: SortOrder
+    description?: SortOrder
     aiCredits?: SortOrder
     createdAt?: SortOrder
   }
@@ -15680,6 +15736,8 @@ export namespace Prisma {
     name?: SortOrder
     slug?: SortOrder
     logoUrl?: SortOrder
+    website?: SortOrder
+    description?: SortOrder
     aiCredits?: SortOrder
     createdAt?: SortOrder
   }
@@ -17076,6 +17134,8 @@ export namespace Prisma {
     name: string
     slug: string
     logoUrl?: string | null
+    website?: string | null
+    description?: string | null
     aiCredits?: number
     createdAt?: Date | string
     jobs?: JobCreateNestedManyWithoutCompanyInput
@@ -17086,6 +17146,8 @@ export namespace Prisma {
     name: string
     slug: string
     logoUrl?: string | null
+    website?: string | null
+    description?: string | null
     aiCredits?: number
     createdAt?: Date | string
     jobs?: JobUncheckedCreateNestedManyWithoutCompanyInput
@@ -17366,6 +17428,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     slug?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     aiCredits?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     jobs?: JobUpdateManyWithoutCompanyNestedInput
@@ -17376,6 +17440,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     slug?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     aiCredits?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     jobs?: JobUncheckedUpdateManyWithoutCompanyNestedInput
@@ -17834,6 +17900,8 @@ export namespace Prisma {
     name: string
     slug: string
     logoUrl?: string | null
+    website?: string | null
+    description?: string | null
     aiCredits?: number
     createdAt?: Date | string
     members?: UserCreateNestedManyWithoutCompanyInput
@@ -17844,6 +17912,8 @@ export namespace Prisma {
     name: string
     slug: string
     logoUrl?: string | null
+    website?: string | null
+    description?: string | null
     aiCredits?: number
     createdAt?: Date | string
     members?: UserUncheckedCreateNestedManyWithoutCompanyInput
@@ -17979,6 +18049,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     slug?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     aiCredits?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: UserUpdateManyWithoutCompanyNestedInput
@@ -17989,6 +18061,8 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     slug?: StringFieldUpdateOperationsInput | string
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
     aiCredits?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     members?: UserUncheckedUpdateManyWithoutCompanyNestedInput

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { profileSchema } from "~/lib/schemas";
 
 import {
     createTRPCRouter,
@@ -6,13 +7,8 @@ import {
     publicProcedure,
 } from "~/server/api/trpc";
 
-// Validation schema for profile updates
-const profileSchema = z.object({
-    bio: z.string().max(500).optional(),
-    skills: z.string().max(1000).optional(), // Comma-separated skills
-    location: z.string().max(100).optional(),
-    portfolioUrl: z.string().url().optional().or(z.literal("")),
-});
+
+
 
 export const profileRouter = createTRPCRouter({
     // --------------------------------------------------------------------------
