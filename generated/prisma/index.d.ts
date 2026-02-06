@@ -65,6 +65,39 @@ export type Account = $Result.DefaultSelection<Prisma.$AccountPayload>
 export type Verification = $Result.DefaultSelection<Prisma.$VerificationPayload>
 
 /**
+ * Enums
+ */
+export namespace $Enums {
+  export const UserRole: {
+  UNASSIGNED: 'UNASSIGNED',
+  CANDIDATE: 'CANDIDATE',
+  EMPLOYER: 'EMPLOYER',
+  ADMIN: 'ADMIN'
+};
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole]
+
+
+export const Badge: {
+  NONE: 'NONE',
+  RISING_TALENT: 'RISING_TALENT',
+  TOP_RATED: 'TOP_RATED',
+  EXPERT: 'EXPERT'
+};
+
+export type Badge = (typeof Badge)[keyof typeof Badge]
+
+}
+
+export type UserRole = $Enums.UserRole
+
+export const UserRole: typeof $Enums.UserRole
+
+export type Badge = $Enums.Badge
+
+export const Badge: typeof $Enums.Badge
+
+/**
  * ##  Prisma Client ʲˢ
  *
  * Type-safe database client for TypeScript & Node.js
@@ -1903,10 +1936,10 @@ export namespace Prisma {
     email: string | null
     emailVerified: boolean | null
     image: string | null
-    role: string | null
+    role: $Enums.UserRole | null
     successRate: number | null
     totalEarnings: number | null
-    badge: string | null
+    badge: $Enums.Badge | null
     createdAt: Date | null
     updatedAt: Date | null
     companyId: string | null
@@ -1918,10 +1951,10 @@ export namespace Prisma {
     email: string | null
     emailVerified: boolean | null
     image: string | null
-    role: string | null
+    role: $Enums.UserRole | null
     successRate: number | null
     totalEarnings: number | null
-    badge: string | null
+    badge: $Enums.Badge | null
     createdAt: Date | null
     updatedAt: Date | null
     companyId: string | null
@@ -2092,10 +2125,10 @@ export namespace Prisma {
     email: string
     emailVerified: boolean
     image: string | null
-    role: string
+    role: $Enums.UserRole
     successRate: number
     totalEarnings: number
-    badge: string
+    badge: $Enums.Badge
     createdAt: Date
     updatedAt: Date
     companyId: string | null
@@ -2231,10 +2264,10 @@ export namespace Prisma {
       email: string
       emailVerified: boolean
       image: string | null
-      role: string
+      role: $Enums.UserRole
       successRate: number
       totalEarnings: number
-      badge: string
+      badge: $Enums.Badge
       createdAt: Date
       updatedAt: Date
       companyId: string | null
@@ -2675,10 +2708,10 @@ export namespace Prisma {
     readonly email: FieldRef<"User", 'String'>
     readonly emailVerified: FieldRef<"User", 'Boolean'>
     readonly image: FieldRef<"User", 'String'>
-    readonly role: FieldRef<"User", 'String'>
+    readonly role: FieldRef<"User", 'UserRole'>
     readonly successRate: FieldRef<"User", 'Int'>
     readonly totalEarnings: FieldRef<"User", 'Float'>
-    readonly badge: FieldRef<"User", 'String'>
+    readonly badge: FieldRef<"User", 'Badge'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
     readonly companyId: FieldRef<"User", 'String'>
@@ -13585,6 +13618,13 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'UserRole'
+   */
+  export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole'>
+    
+
+
+  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -13595,6 +13635,13 @@ export namespace Prisma {
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Badge'
+   */
+  export type EnumBadgeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Badge'>
     
 
 
@@ -13617,10 +13664,10 @@ export namespace Prisma {
     email?: StringFilter<"User"> | string
     emailVerified?: BoolFilter<"User"> | boolean
     image?: StringNullableFilter<"User"> | string | null
-    role?: StringFilter<"User"> | string
+    role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     successRate?: IntFilter<"User"> | number
     totalEarnings?: FloatFilter<"User"> | number
-    badge?: StringFilter<"User"> | string
+    badge?: EnumBadgeFilter<"User"> | $Enums.Badge
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     companyId?: StringNullableFilter<"User"> | string | null
@@ -13668,10 +13715,10 @@ export namespace Prisma {
     name?: StringFilter<"User"> | string
     emailVerified?: BoolFilter<"User"> | boolean
     image?: StringNullableFilter<"User"> | string | null
-    role?: StringFilter<"User"> | string
+    role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     successRate?: IntFilter<"User"> | number
     totalEarnings?: FloatFilter<"User"> | number
-    badge?: StringFilter<"User"> | string
+    badge?: EnumBadgeFilter<"User"> | $Enums.Badge
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     companyId?: StringNullableFilter<"User"> | string | null
@@ -13715,10 +13762,10 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"User"> | string
     emailVerified?: BoolWithAggregatesFilter<"User"> | boolean
     image?: StringNullableWithAggregatesFilter<"User"> | string | null
-    role?: StringWithAggregatesFilter<"User"> | string
+    role?: EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
     successRate?: IntWithAggregatesFilter<"User"> | number
     totalEarnings?: FloatWithAggregatesFilter<"User"> | number
-    badge?: StringWithAggregatesFilter<"User"> | string
+    badge?: EnumBadgeWithAggregatesFilter<"User"> | $Enums.Badge
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     companyId?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -14401,10 +14448,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -14424,10 +14471,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -14447,10 +14494,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -14470,10 +14517,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -14493,10 +14540,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -14508,10 +14555,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -14522,10 +14569,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -15279,6 +15326,13 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type EnumUserRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.UserRole[]
+    notIn?: $Enums.UserRole[]
+    not?: NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
+  }
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -15299,6 +15353,13 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type EnumBadgeFilter<$PrismaModel = never> = {
+    equals?: $Enums.Badge | EnumBadgeFieldRefInput<$PrismaModel>
+    in?: $Enums.Badge[]
+    notIn?: $Enums.Badge[]
+    not?: NestedEnumBadgeFilter<$PrismaModel> | $Enums.Badge
   }
 
   export type DateTimeFilter<$PrismaModel = never> = {
@@ -15484,6 +15545,16 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
+  export type EnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.UserRole[]
+    notIn?: $Enums.UserRole[]
+    not?: NestedEnumUserRoleWithAggregatesFilter<$PrismaModel> | $Enums.UserRole
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumUserRoleFilter<$PrismaModel>
+    _max?: NestedEnumUserRoleFilter<$PrismaModel>
+  }
+
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -15514,6 +15585,16 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type EnumBadgeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Badge | EnumBadgeFieldRefInput<$PrismaModel>
+    in?: $Enums.Badge[]
+    notIn?: $Enums.Badge[]
+    not?: NestedEnumBadgeWithAggregatesFilter<$PrismaModel> | $Enums.Badge
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBadgeFilter<$PrismaModel>
+    _max?: NestedEnumBadgeFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -16074,6 +16155,10 @@ export namespace Prisma {
     set?: string | null
   }
 
+  export type EnumUserRoleFieldUpdateOperationsInput = {
+    set?: $Enums.UserRole
+  }
+
   export type IntFieldUpdateOperationsInput = {
     set?: number
     increment?: number
@@ -16088,6 +16173,10 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type EnumBadgeFieldUpdateOperationsInput = {
+    set?: $Enums.Badge
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -16743,6 +16832,13 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedEnumUserRoleFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.UserRole[]
+    notIn?: $Enums.UserRole[]
+    not?: NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
+  }
+
   export type NestedIntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -16763,6 +16859,13 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedEnumBadgeFilter<$PrismaModel = never> = {
+    equals?: $Enums.Badge | EnumBadgeFieldRefInput<$PrismaModel>
+    in?: $Enums.Badge[]
+    notIn?: $Enums.Badge[]
+    not?: NestedEnumBadgeFilter<$PrismaModel> | $Enums.Badge
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -16829,6 +16932,16 @@ export namespace Prisma {
     not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
+  export type NestedEnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.UserRole | EnumUserRoleFieldRefInput<$PrismaModel>
+    in?: $Enums.UserRole[]
+    notIn?: $Enums.UserRole[]
+    not?: NestedEnumUserRoleWithAggregatesFilter<$PrismaModel> | $Enums.UserRole
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumUserRoleFilter<$PrismaModel>
+    _max?: NestedEnumUserRoleFilter<$PrismaModel>
+  }
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
@@ -16859,6 +16972,16 @@ export namespace Prisma {
     _sum?: NestedFloatFilter<$PrismaModel>
     _min?: NestedFloatFilter<$PrismaModel>
     _max?: NestedFloatFilter<$PrismaModel>
+  }
+
+  export type NestedEnumBadgeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Badge | EnumBadgeFieldRefInput<$PrismaModel>
+    in?: $Enums.Badge[]
+    notIn?: $Enums.Badge[]
+    not?: NestedEnumBadgeWithAggregatesFilter<$PrismaModel> | $Enums.Badge
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumBadgeFilter<$PrismaModel>
+    _max?: NestedEnumBadgeFilter<$PrismaModel>
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -17468,10 +17591,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     company?: CompanyCreateNestedOneWithoutMembersInput
@@ -17490,10 +17613,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -17528,10 +17651,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     company?: CompanyUpdateOneWithoutMembersNestedInput
@@ -17550,10 +17673,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -17572,10 +17695,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -17594,10 +17717,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -17681,10 +17804,10 @@ export namespace Prisma {
     email?: StringFilter<"User"> | string
     emailVerified?: BoolFilter<"User"> | boolean
     image?: StringNullableFilter<"User"> | string | null
-    role?: StringFilter<"User"> | string
+    role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     successRate?: IntFilter<"User"> | number
     totalEarnings?: FloatFilter<"User"> | number
-    badge?: StringFilter<"User"> | string
+    badge?: EnumBadgeFilter<"User"> | $Enums.Badge
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     companyId?: StringNullableFilter<"User"> | string | null
@@ -17737,10 +17860,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -17759,10 +17882,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -17888,10 +18011,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -17910,10 +18033,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -17964,10 +18087,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -17986,10 +18109,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -18057,10 +18180,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -18079,10 +18202,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -18140,10 +18263,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -18162,10 +18285,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -18264,10 +18387,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -18286,10 +18409,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -18386,10 +18509,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -18408,10 +18531,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -18435,10 +18558,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -18457,10 +18580,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -18524,10 +18647,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -18546,10 +18669,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -18579,10 +18702,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -18601,10 +18724,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -18623,10 +18746,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -18645,10 +18768,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -18683,10 +18806,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -18705,10 +18828,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -18727,10 +18850,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -18749,10 +18872,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
     companyId?: string | null
@@ -18787,10 +18910,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -18809,10 +18932,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     companyId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -19153,10 +19276,10 @@ export namespace Prisma {
     email: string
     emailVerified?: boolean
     image?: string | null
-    role?: string
+    role?: $Enums.UserRole
     successRate?: number
     totalEarnings?: number
-    badge?: string
+    badge?: $Enums.Badge
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -19179,10 +19302,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -19201,10 +19324,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -19223,10 +19346,10 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
     image?: NullableStringFieldUpdateOperationsInput | string | null
-    role?: StringFieldUpdateOperationsInput | string
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     successRate?: IntFieldUpdateOperationsInput | number
     totalEarnings?: FloatFieldUpdateOperationsInput | number
-    badge?: StringFieldUpdateOperationsInput | string
+    badge?: EnumBadgeFieldUpdateOperationsInput | $Enums.Badge
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

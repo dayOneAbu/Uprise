@@ -243,7 +243,19 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.UserRole = exports.$Enums.UserRole = {
+  UNASSIGNED: 'UNASSIGNED',
+  CANDIDATE: 'CANDIDATE',
+  EMPLOYER: 'EMPLOYER',
+  ADMIN: 'ADMIN'
+};
 
+exports.Badge = exports.$Enums.Badge = {
+  NONE: 'NONE',
+  RISING_TALENT: 'RISING_TALENT',
+  TOP_RATED: 'TOP_RATED',
+  EXPERT: 'EXPERT'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',

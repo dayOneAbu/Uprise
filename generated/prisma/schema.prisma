@@ -14,10 +14,10 @@ model User {
   email         String   @unique
   emailVerified Boolean  @default(false)
   image         String?
-  role          String   @default("CANDIDATE")
+  role          UserRole @default(UNASSIGNED)
   successRate   Int      @default(0)
   totalEarnings Float    @default(0)
-  badge         String   @default("NONE")
+  badge         Badge    @default(NONE)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -165,4 +165,18 @@ model Verification {
   updatedAt  DateTime @updatedAt
 
   @@map("verification")
+}
+
+enum UserRole {
+  UNASSIGNED
+  CANDIDATE
+  EMPLOYER
+  ADMIN
+}
+
+enum Badge {
+  NONE
+  RISING_TALENT
+  TOP_RATED
+  EXPERT
 }

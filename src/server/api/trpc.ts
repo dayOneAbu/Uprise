@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 
 import { auth } from "~/server/better-auth";
 import { db } from "~/server/db";
+import { UserRole } from "~/generated/prisma";
 
 /**
  * 1. CONTEXT
@@ -132,3 +133,17 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Admin (authenticated & authorized) procedure
+ *
+ * Use this for routes that should only be accessible to admins.
+ */
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  if (ctx.session.user.role !== UserRole.ADMIN) {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+  return next({
+    ctx,
+  });
+});

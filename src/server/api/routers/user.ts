@@ -5,18 +5,15 @@ import {
     createTRPCRouter,
     protectedProcedure,
     publicProcedure,
+    adminProcedure,
 } from "~/server/api/trpc";
+import { UserRole, Badge } from "~/generated/prisma";
 
 // ============================================================================
 // VALIDATION SCHEMAS
 // ============================================================================
 
-const profileSchema = z.object({
-    bio: z.string().max(500).optional(),
-    skills: z.string().max(1000).optional(), // Comma-separated skills
-    location: z.string().max(100).optional(),
-    portfolioUrl: z.string().url().optional().or(z.literal("")),
-});
+
 
 const updateUserSchema = z.object({
     name: z.string().min(2).max(100).optional(),
@@ -74,8 +71,9 @@ export const userRouter = createTRPCRouter({
 
             // Check if requester is the user themselves or has permission
             const isOwner = ctx.session?.user?.id === user.id;
-            const isEmployer = ctx.session?.user?.role === "EMPLOYER";
-            const isAdmin = ctx.session?.user?.role === "ADMIN";
+            const isEmployer = ctx.session?.user?.role === UserRole.EMPLOYER;
+            const isAdmin = ctx.session?.user?.role === UserRole.ADMIN;
+
 
             // Blind mode: hide personal info unless owner/admin
             if (!isOwner && !isAdmin) {
@@ -121,33 +119,87 @@ export const userRouter = createTRPCRouter({
             return user;
         }),
 
+
+
     // --------------------------------------------------------------------------
-    // UPDATE PROFILE (Protected)
-    // Update extended profile (bio, skills, location, portfolio)
+    // SET ROLE (Protected - One Time)
+    // Allows new users to set their role to CANDIDATE or EMPLOYER
     // --------------------------------------------------------------------------
-    updateProfile: protectedProcedure
-        .input(profileSchema)
+    setRole: protectedProcedure
+        .input(z.object({ role: z.enum([UserRole.CANDIDATE, UserRole.EMPLOYER]) }))
         .mutation(async ({ ctx, input }) => {
-            // Upsert profile - create if doesn't exist, update if it does
-            const profile = await ctx.db.profile.upsert({
-                where: { userId: ctx.session.user.id },
-                create: {
-                    userId: ctx.session.user.id,
-                    bio: input.bio,
-                    skills: input.skills,
-                    location: input.location,
-                    portfolioUrl: input.portfolioUrl ?? null,
-                },
-                update: {
-                    bio: input.bio,
-                    skills: input.skills,
-                    location: input.location,
-                    portfolioUrl: input.portfolioUrl ?? null,
-                },
+            const user = await ctx.db.user.findUnique({
+                where: { id: ctx.session.user.id },
             });
 
-            return profile;
+            if (!user) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "User not found",
+                });
+            }
+
+            // Only allow setting role if currently UNASSIGNED
+            if (user.role !== UserRole.UNASSIGNED) {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Role has already been assigned.",
+                });
+            }
+
+            return ctx.db.user.update({
+                where: { id: ctx.session.user.id },
+                data: { role: input.role },
+            });
         }),
+
+    // --------------------------------------------------------------------------
+    // ADMIN LIST USERS (Admin Only)
+    // --------------------------------------------------------------------------
+    adminListUsers: adminProcedure
+        .input(z.object({
+            limit: z.number().min(1).max(100).default(50),
+            cursor: z.string().optional(),
+            role: z.nativeEnum(UserRole).optional(),
+            search: z.string().optional(),
+        }))
+        .query(async ({ ctx, input }) => {
+            const users = await ctx.db.user.findMany({
+                where: {
+                    role: input.role,
+                    OR: input.search ? [
+                        { name: { contains: input.search } },
+                        { email: { contains: input.search } }
+                    ] : undefined,
+                },
+                take: input.limit + 1,
+                cursor: input.cursor ? { id: input.cursor } : undefined,
+                orderBy: { createdAt: 'desc' },
+            });
+
+            let nextCursor: string | undefined = undefined;
+            if (users.length > input.limit) {
+                const nextItem = users.pop();
+                nextCursor = nextItem?.id;
+            }
+
+            return {
+                users,
+                nextCursor,
+            };
+        }),
+
+    // --------------------------------------------------------------------------
+    // ADMIN TOGGLE BAN (Admin Only)
+    // Note: We don't have a specific "BANNED" state but we can perhaps use 
+    // a separate flag or repurpose UNASSIGNED if really needed, but usually 
+    // this would need a `banned` or `status` field.
+    // For now, let's assume we might implement this later or use a different mechanism.
+    // I'll skip toggleBan for now as schema support isn't explicit for "BANNED" 
+    // vs "Job Suspended" etc. 
+    // Use `deleteAccount` for severe actions.
+    // --------------------------------------------------------------------------
+
 
     // --------------------------------------------------------------------------
     // LIST CANDIDATES (Employer only)
@@ -159,13 +211,13 @@ export const userRouter = createTRPCRouter({
                 limit: z.number().min(1).max(100).default(20),
                 cursor: z.string().optional(), // For pagination
                 minSuccessRate: z.number().min(0).max(100).optional(),
-                badge: z.enum(["NONE", "RISING_TALENT", "TOP_RATED", "EXPERT"]).optional(),
+                badge: z.nativeEnum(Badge).optional(),
                 skills: z.string().optional(), // Search in skills
             })
         )
         .query(async ({ ctx, input }) => {
             // Only employers and admins can browse candidates
-            if (ctx.session.user.role !== "EMPLOYER" && ctx.session.user.role !== "ADMIN") {
+            if (ctx.session.user.role !== UserRole.EMPLOYER && ctx.session.user.role !== UserRole.ADMIN) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
                     message: "Only employers can browse candidates",
@@ -174,7 +226,7 @@ export const userRouter = createTRPCRouter({
 
             const candidates = await ctx.db.user.findMany({
                 where: {
-                    role: "CANDIDATE",
+                    role: UserRole.CANDIDATE,
                     successRate: input.minSuccessRate
                         ? { gte: input.minSuccessRate }
                         : undefined,
