@@ -1,76 +1,155 @@
-// Prisma schema for Better Auth
-// learn more: https://better-auth.com/docs/concepts/database
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
-
-// NOTE: When using mysql or sqlserver, uncomment the //@db.Text annotations in model Account below
-// Further reading:
-// https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
 
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  role          String   @default("CANDIDATE")
+  successRate   Int      @default(0)
+  totalEarnings Float    @default(0)
+  badge         String   @default("NONE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  createdBy   User   @relation(fields: [createdById], references: [id])
-  createdById String
+  profile      Profile?
+  companyId    String?
+  company      Company?      @relation(fields: [companyId], references: [id])
+  sessions     Session[]
+  accounts     Account[]
+  applications Application[]
+  contracts    Contract[]    @relation("InternContracts")
+  reviewsGiven Review[]      @relation("Reviewer")
+  reviewsRec   Review[]      @relation("Reviewee")
+  jobsPosted   Job[]         @relation("EmployerJobs")
 
-  @@index([name])
+  @@map("user")
 }
 
-model User {
-  id            String    @id
-  name          String //@db.Text
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String? //@db.Text
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  posts         Post[]
+model Profile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio          String?
+  skills       String?
+  location     String?
+  portfolioUrl String?
+}
 
-  @@unique([email])
-  @@map("user")
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logoUrl   String?
+  aiCredits Int      @default(50)
+  createdAt DateTime @default(now())
+  members   User[]
+  jobs      Job[]
+}
+
+model Job {
+  id            String        @id @default(cuid())
+  title         String
+  description   String
+  status        String        @default("OPEN")
+  testPrompt    String
+  gradingRubric String?
+  companyId     String
+  company       Company       @relation(fields: [companyId], references: [id])
+  employerId    String
+  employer      User          @relation("EmployerJobs", fields: [employerId], references: [id])
+  applications  Application[]
+  contracts     Contract[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([companyId])
+  @@index([employerId])
+}
+
+model Application {
+  id            String   @id @default(cuid())
+  status        String   @default("SUBMITTED")
+  answerContent String
+  score         Int?
+  aiFeedback    String?
+  aiAnalysis    String?
+  isAiFlagged   Boolean  @default(false)
+  candidateId   String
+  candidate     User     @relation(fields: [candidateId], references: [id])
+  jobId         String
+  job           Job      @relation(fields: [jobId], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@unique([candidateId, jobId])
+  @@index([jobId, score])
+}
+
+model Contract {
+  id        String    @id @default(cuid())
+  status    String    @default("ACTIVE")
+  internId  String
+  intern    User      @relation("InternContracts", fields: [internId], references: [id])
+  jobId     String
+  job       Job       @relation(fields: [jobId], references: [id])
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  reviews   Review[]
+
+  @@index([internId])
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  contractId   String
+  contract     Contract @relation(fields: [contractId], references: [id])
+  reviewerId   String
+  reviewer     User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  revieweeId   String
+  reviewee     User     @relation("Reviewee", fields: [revieweeId], references: [id])
+  rating       Int
+  comment      String?
+  privateScore Int?
+  isPrivate    Boolean  @default(false)
+  createdAt    DateTime @default(now())
 }
 
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String? //@db.Text
-  userAgent String? //@db.Text
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@unique([token])
   @@map("session")
 }
 
 model Account {
   id                    String    @id
-  accountId             String //@db.Text
-  providerId            String //@db.Text
+  accountId             String
+  providerId            String
   userId                String
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String? //@db.Text
-  refreshToken          String? //@db.Text
-  idToken               String? //@db.Text
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
-  scope                 String? //@db.Text
-  password              String? //@db.Text
+  scope                 String?
+  password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
@@ -79,11 +158,11 @@ model Account {
 
 model Verification {
   id         String   @id
-  identifier String //@db.Text
-  value      String //@db.Text
+  identifier String
+  value      String
   expiresAt  DateTime
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+  updatedAt  DateTime @updatedAt
 
   @@map("verification")
 }

@@ -13,15 +13,35 @@ export const auth = betterAuth({
     enabled: true,
   },
   socialProviders: {
-    
+
   },
-   disablePaths: ["/is-username-available"],
+  disablePaths: ["/is-username-available"],
   plugins: [
     username({
       minUsernameLength: 5,
       maxUsernameLength: 100
     })
   ],
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+      },
+      // NOTE: We must explicitly define these fields here for Better Auth to:
+      // 1. Include them in the session.user type inference
+      // 2. Fetch them from the database when creating a session
+      // This fixes "Unsafe member access" lint errors on ctx.session.user
+      successRate: {
+        type: "number",
+      },
+      totalEarnings: {
+        type: "number",
+      },
+      badge: {
+        type: "string",
+      },
+    },
+  },
 });
 
 export type Session = typeof auth.$Infer.Session;
