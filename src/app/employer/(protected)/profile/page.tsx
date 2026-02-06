@@ -15,8 +15,8 @@ export default async function EmployerProfilePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Company Profile</h1>
-        <p className="text-slate-500 mt-2">Manage your company&apos;s public appearance.</p>
+        <h1 className="text-4xl font-bold tracking-tight text-foreground">Company Profile</h1>
+        <p className="text-muted-foreground mt-2 text-lg">Manage your company&apos;s public appearance.</p>
       </div>
       
       <EmployerProfileForm />

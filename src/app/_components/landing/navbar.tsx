@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { Button } from "~/app/_components/ui/button";
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface NavbarProps {
   session: {
@@ -14,29 +16,42 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ session }) => {
   const role = session?.user.role;
+  const { setTheme, theme } = useTheme();
 
   return (
-    <nav className="flex items-center justify-between p-4 md:p-6 bg-white sticky top-0 z-50 border-b border-slate-200">
+    <nav className="flex items-center justify-between p-4 md:p-6 bg-background/95 backdrop-blur-sm sticky top-0 z-50 border-b border-border">
       <div className="flex items-center gap-8">
-        <Link href="/" className="text-2xl font-bold text-blue-900 tracking-tight flex items-center gap-2">
-            <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">M</div>
+        <Link href="/" className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">M</div>
             MeritMatch
         </Link>
-        <div className="hidden md:flex gap-6 text-sm font-medium text-slate-600">
-            <Link href="/employer/auth/login" className="hover:text-blue-600">Find Talent</Link>
-            <Link href="/candidate/auth/login" className="hover:text-blue-600">Find Internships</Link>
-            <Link href="/#why-meritmatch" className="hover:text-blue-600">Why MeritMatch</Link>
-            <Link href="/#enterprise" className="hover:text-blue-600">Enterprise</Link>
+        <div className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
+            <Link href="/employer/auth/login" className="hover:text-foreground transition-colors">Find Talent</Link>
+            <Link href="/candidate/auth/login" className="hover:text-foreground transition-colors">Find Internships</Link>
+            <Link href="/#why-meritmatch" className="hover:text-foreground transition-colors">Why MeritMatch</Link>
+            
         </div>
       </div>
       
       <div className="flex gap-4 items-center">
+        {/* Theme Toggle */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="w-9 h-9"
+        >
+          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
+
         {session ? (
             <div className="flex gap-4 items-center">
-                <span className="text-sm font-medium text-gray-600 hidden md:block">
+                <span className="text-sm font-medium text-muted-foreground hidden md:block">
                     {session.user.email}
                 </span>
-                
+
                 {role === "EMPLOYER" && (
                     <Button variant="outline" asChild className="hidden md:flex">
                         <Link href="/employer/jobs">Dashboard</Link>
@@ -48,16 +63,16 @@ export const Navbar: React.FC<NavbarProps> = ({ session }) => {
                     </Button>
                 )}
 
-                <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50" asChild>
+                <Button variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" asChild>
                      <Link href="/api/auth/signout">Sign Out</Link>
                 </Button>
             </div>
         ) : (
             <>
-                <Button variant="ghost" className="text-slate-600 font-semibold" asChild>
+                <Button variant="ghost" className="font-semibold" asChild>
                      <Link href="/candidate/auth/login">Log In</Link>
                 </Button>
-                <Button className="bg-blue-600 text-white hover:bg-blue-700 rounded-full px-6" asChild>
+                <Button className="rounded-full px-6" asChild>
                      <Link href="/candidate/auth/login">Sign Up</Link>
                 </Button>
             </>

@@ -1,12 +1,12 @@
 "use client";
 
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { jobSchema } from "~/lib/schemas";
+import { updateJobSchema } from "~/lib/schemas";
 import { api } from "~/trpc/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { type z } from "zod";
 import { Button } from "~/app/_components/ui/button";
 import { Input } from "~/app/_components/ui/input";
@@ -37,28 +37,30 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-type JobFormData = z.infer<typeof jobSchema>;
+type JobFormData = z.infer<typeof updateJobSchema>;
 
-export default function PostJobPage() {
+export default function EditJobPage() {
   const router = useRouter();
+  const params = useParams();
+  const jobId = params.id as string;
   const [previewMode, setPreviewMode] = useState(false);
 
-  const createJob = api.job.create.useMutation({
+  const { data: job, isLoading: jobLoading } = api.job.get.useQuery({ id: jobId });
+
+  const updateJob = api.job.update.useMutation({
     onSuccess: () => {
-      toast.success("Job posted successfully!");
-      router.push("/employer/jobs");
-      router.refresh();
+      toast.success("Job updated successfully!");
+      router.push(`/employer/jobs/${jobId}`);
     },
     onError: (error) => {
-      toast.error(`Failed to post job: ${error.message}`);
+      toast.error(`Failed to update job: ${error.message}`);
     },
   });
 
-  const { data: user } = api.user.me.useQuery();
-
   const form = useForm<JobFormData>({
-    resolver: zodResolver(jobSchema),
+    resolver: zodResolver(updateJobSchema),
     defaultValues: {
+      id: jobId,
       title: "",
       description: "",
       testPrompt: "",
@@ -66,39 +68,48 @@ export default function PostJobPage() {
     },
   });
 
-  const onSubmit = (data: JobFormData) => {
-    if (!user?.companyId) {
-      toast.error("You need to belong to a company to post a job.");
-      return;
+  // Populate form when job data loads
+  useEffect(() => {
+    if (job) {
+      form.reset({
+        id: jobId,
+        title: job.title,
+        description: job.description,
+        testPrompt: job.testPrompt,
+        gradingRubric: job.gradingRubric ?? "",
+      });
     }
-    createJob.mutate({ ...data, companyId: user.companyId });
+  }, [job, jobId, form]);
+
+  const onSubmit = (data: JobFormData) => {
+    updateJob.mutate(data);
   };
 
-  if (!user) {
+  if (jobLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">Loading user information...</p>
+          <p className="text-muted-foreground">Loading job details...</p>
         </div>
       </div>
     );
   }
 
-  if (!user.companyId) {
+  if (!job) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="max-w-md">
           <CardHeader className="text-center">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <CardTitle>Company Required</CardTitle>
+            <CardTitle>Job Not Found</CardTitle>
             <CardDescription>
-              You need to create a company profile before posting jobs.
+              The job you&apos;re trying to edit doesn&apos;t exist or you don&apos;t have permission to edit it.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="w-full">
-              <Link href="/employer/onboarding">Create Company</Link>
+              <Link href="/employer/jobs">Back to Jobs</Link>
             </Button>
           </CardContent>
         </Card>
@@ -114,18 +125,21 @@ export default function PostJobPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/employer/jobs">
+            <Link href={`/employer/jobs/${jobId}`}>
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">Post New Job</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground">Edit Job</h1>
             <p className="text-muted-foreground mt-1">
-              Create a job posting with AI-powered skill assessment
+              Update job details and assessment requirements
             </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Badge variant={job.status === "OPEN" ? "default" : "secondary"}>
+            {job.status}
+          </Badge>
           <Button
             variant="outline"
             onClick={() => setPreviewMode(!previewMode)}
@@ -147,137 +161,137 @@ export default function PostJobPage() {
                 Job Details
               </CardTitle>
               <CardDescription>
-                Provide essential information about the internship position
+                Update the job information and requirements
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Job Title */}
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Job Title *</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="e.g. Frontend Developer Intern"
-                          className="text-base"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  {/* Job Title */}
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Job Title *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g. Frontend Developer Intern"
+                            className="text-base"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Job Description */}
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Job Description *</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          rows={6}
-                          placeholder="Describe the role responsibilities, requirements, and what the intern will learn..."
-                          className="text-base resize-none"
-                          {...field}
-                        />
-                      </FormControl>
+                  {/* Job Description */}
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Job Description *</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            rows={6}
+                            placeholder="Describe the role responsibilities, requirements, and what the intern will learn..."
+                            className="text-base resize-none"
+                            {...field}
+                          />
+                        </FormControl>
                       <p className="text-xs text-muted-foreground">
-                        {field.value?.length || 0}/500 characters (minimum 20 required)
+                        {(field.value?.length ?? 0)}/500 characters (minimum 20 required)
                       </p>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <Separator />
+                  <Separator />
 
-                {/* AI Test Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Code className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-semibold">AI-Powered Skill Assessment</h3>
+                  {/* AI Test Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Code className="h-5 w-5 text-primary" />
+                      <h3 className="text-lg font-semibold">AI-Powered Skill Assessment</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Define a technical challenge that candidates will complete to demonstrate their skills.
+                    </p>
+
+                    <FormField
+                      control={form.control}
+                      name="testPrompt"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Test Prompt *</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              rows={4}
+                              placeholder="e.g. Build a responsive todo list application using React with the following requirements..."
+                              className="text-base resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="gradingRubric"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Grading Rubric (Optional)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              rows={3}
+                              placeholder="Define specific criteria for evaluation (e.g., code quality, functionality, creativity)..."
+                              className="text-base resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <p className="text-xs text-muted-foreground">
+                            Helps AI evaluate submissions more accurately
+                          </p>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Define a technical challenge that candidates will complete to demonstrate their skills.
-                  </p>
 
-                  <FormField
-                    control={form.control}
-                    name="testPrompt"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Test Prompt *</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            rows={4}
-                            placeholder="e.g. Build a responsive todo list application using React with the following requirements..."
-                            className="text-base resize-none"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="gradingRubric"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Grading Rubric (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            rows={3}
-                            placeholder="Define specific criteria for evaluation (e.g., code quality, functionality, creativity)..."
-                            className="text-base resize-none"
-                            {...field}
-                          />
-                        </FormControl>
-                        <p className="text-xs text-muted-foreground">
-                          Helps AI evaluate submissions more accurately
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Submit Button */}
-                <div className="flex items-center justify-between pt-6 border-t">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => router.push("/employer/jobs")}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={createJob.isPending}
-                    className="gap-2 min-w-[140px]"
-                  >
-                    {createJob.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Posting...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4" />
-                        Post Job
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
+                  {/* Submit Button */}
+                  <div className="flex items-center justify-between pt-6 border-t">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => router.push(`/employer/jobs/${jobId}`)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={updateJob.isPending}
+                      className="gap-2 min-w-[140px]"
+                    >
+                      {updateJob.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4" />
+                          Update Job
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </div>
@@ -303,7 +317,9 @@ export default function PostJobPage() {
                       {watchedValues.title}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary">Open</Badge>
+                      <Badge variant={job.status === "OPEN" ? "default" : "secondary"}>
+                        {job.status}
+                      </Badge>
                       <span className="text-sm text-muted-foreground">Skill Sprint Required</span>
                     </div>
                   </div>
@@ -344,26 +360,26 @@ export default function PostJobPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary">
                 <Lightbulb className="h-5 w-5" />
-                Pro Tips
+                Editing Tips
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex gap-3">
                 <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <p className="text-sm">
-                  <strong>Be specific:</strong> Clear requirements attract better candidates
+                  <strong>Keep it current:</strong> Update requirements based on recent hires
                 </p>
               </div>
               <div className="flex gap-3">
                 <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <p className="text-sm">
-                  <strong>Test real skills:</strong> Focus on practical coding challenges
+                  <strong>Test effectiveness:</strong> Refine challenges based on candidate performance
                 </p>
               </div>
               <div className="flex gap-3">
                 <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                 <p className="text-sm">
-                  <strong>Include learning:</strong> Mention what interns will gain from the role
+                  <strong>Status matters:</strong> Close jobs when positions are filled
                 </p>
               </div>
             </CardContent>

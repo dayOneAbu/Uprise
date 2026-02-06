@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { auth } from "~/server/better-auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { EmployerSidebar } from "~/app/_components/employer/sidebar";
 
 export default async function EmployerLayout({
   children,
@@ -26,35 +26,11 @@ export default async function EmployerLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="w-full bg-slate-900 text-slate-100 md:w-64">
-        <div className="p-4">
-          <h2 className="text-xl font-bold">Employer Portal</h2>
-        </div>
-        <nav className="flex flex-col gap-2 p-2">
-          <Link
-            href="/employer/jobs"
-            className="rounded p-2 hover:bg-slate-800"
-          >
-            My Jobs
-          </Link>
-          <Link
-            href="/employer/contracts"
-            className="rounded p-2 hover:bg-slate-800"
-          >
-            Contracts
-          </Link>
-          <Link
-            href="/employer/profile"
-            className="rounded p-2 hover:bg-slate-800"
-          >
-            Company Profile
-          </Link>
-        </nav>
-      </aside>
-      <main className="flex-1 bg-slate-50 p-6 text-slate-900">
+    <div className="flex min-h-screen w-full bg-background text-foreground">
+      <EmployerSidebar />
+      <div className="flex-1 p-6 overflow-auto">
         {children}
-      </main>
+      </div>
     </div>
   );
 }

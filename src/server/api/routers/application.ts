@@ -33,7 +33,18 @@ export const applicationRouter = createTRPCRouter({
                 throw new TRPCError({ code: "CONFLICT", message: "Already applied to this job" });
             }
 
-            return ctx.db.application.create({
+            // Get job details for AI grading
+            const job = await ctx.db.job.findUnique({
+                where: { id: input.jobId },
+                select: { testPrompt: true, gradingRubric: true }
+            });
+
+            if (!job) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
+            }
+
+            // Create application
+            const application = await ctx.db.application.create({
                 data: {
                     jobId: input.jobId,
                     candidateId: ctx.session.user.id,
@@ -41,6 +52,73 @@ export const applicationRouter = createTRPCRouter({
                     status: "SUBMITTED",
                 }
             });
+
+            // Trigger AI grading (async - don't wait for it in response)
+            // In a real app, this would be done via a job queue
+            ctx.db.application.update({
+                where: { id: application.id },
+                data: {
+                    status: "REVIEWING", // AI is processing
+                }
+            }).then(async () => {
+                // Call AI grading
+                try {
+                    await ctx.db.$executeRaw`SELECT 1`; // Keep connection alive
+                    // In a real app: await ai.gradeSubmission(application.id, job.testPrompt, input.answerContent);
+                    // For demo, we'll simulate this with a delay
+                    setTimeout(async () => {
+                        // Mock AI grading result
+                        const mockScore = Math.floor(Math.random() * 40) + 60; // 60-100 range
+                        await ctx.db.application.update({
+                            where: { id: application.id },
+                            data: {
+                                score: mockScore,
+                                status: "REVIEWING", // Ready for employer review
+                                gradedAt: new Date(),
+                                aiAnalysis: JSON.stringify({
+                                    feedback: mockScore > 85 ? "Excellent technical solution with strong problem-solving skills!" :
+                                             mockScore > 70 ? "Good work with solid understanding of the requirements." :
+                                             "Decent attempt, shows basic understanding but needs more depth.",
+                                    strengths: ["Problem understanding", "Code structure"],
+                                    weaknesses: ["Could use more comments", "Edge cases not handled"],
+                                    isPlagiarized: false,
+                                    plagiarismConfidence: 0,
+                                })
+                            }
+                        });
+                    }, 2000); // 2 second delay to simulate AI processing
+                } catch (error) {
+                    console.error("AI grading failed:", error);
+                    // Fallback: mark as submitted without grading
+                    await ctx.db.application.update({
+                        where: { id: application.id },
+                        data: { status: "SUBMITTED" }
+                    });
+                }
+            }).catch(console.error);
+
+            return application;
+        }),
+
+    // --------------------------------------------------------------------------
+    // GET MY APPLICATION STATUS FOR A JOB (Protected - Candidate)
+    // --------------------------------------------------------------------------
+    getMyApplicationStatus: protectedProcedure
+        .input(byJobIdSchema)
+        .query(async ({ ctx, input }) => {
+            const application = await ctx.db.application.findUnique({
+                where: {
+                    candidateId_jobId: {
+                        candidateId: ctx.session.user.id,
+                        jobId: input.jobId,
+                    }
+                }
+            });
+
+            return {
+                hasApplied: !!application,
+                application,
+            };
         }),
 
     // --------------------------------------------------------------------------
@@ -90,8 +168,7 @@ export const applicationRouter = createTRPCRouter({
                     candidate: {
                         select: {
                             id: true,
-                            // User router handles blind info detailed fetching, here we might give basics
-                            // or just ID/Blind stats
+                            name: true,
                             successRate: true,
                             badge: true,
                         }

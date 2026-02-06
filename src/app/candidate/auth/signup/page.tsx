@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "~/lib/schemas";
@@ -36,19 +38,20 @@ export default function CandidateSignupPage() {
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await authClient.signUp.email({
         email: data.email,
         password: data.password,
         name: data.name,
         role: "CANDIDATE",
         callbackURL: "/candidate", // Candidate onboarding or dashboard
-    } as any, {
+    } as any, { // eslint-disable-line @typescript-eslint/no-explicit-any
         onSuccess: () => {
              router.push("/candidate");
         },
         onError: (ctx) => {
-            alert(ctx.error.message);
+            toast.error(ctx.error.message);
             setIsLoading(false);
         }
     });
@@ -58,7 +61,7 @@ export default function CandidateSignupPage() {
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 p-8">
         <div className="text-center mb-8">
-            <div className="mx-auto h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-2xl mb-4">
+            <div className="mx-auto h-12 w-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mb-4">
                 🎓
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Candidate Signup</h1>
@@ -106,7 +109,7 @@ export default function CandidateSignupPage() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700" disabled={isLoading}>
               {isLoading ? "Creating Account..." : (
                   <>
                   Sign Up <ArrowRight className="ml-2 h-4 w-4" />
@@ -117,7 +120,7 @@ export default function CandidateSignupPage() {
         </Form>
         <div className="text-center mt-6 text-sm">
             <span className="text-gray-500">Already have an account? </span>
-            <a href="/candidate/auth/login" className="text-indigo-600 font-medium hover:underline">Log in</a>
+            <a href="/candidate/auth/login" className="text-amber-600 font-medium hover:underline">Log in</a>
         </div>
       </div>
     </div>

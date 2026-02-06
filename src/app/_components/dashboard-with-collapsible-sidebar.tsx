@@ -135,7 +135,14 @@ const Sidebar = () => {
   );
 };
 
-const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
+const Option = ({ Icon, title, selected, setSelected, open, notifs }: {
+  Icon: React.ElementType;
+  title: string;
+  selected: string;
+  setSelected: (value: string) => void;
+  open: boolean;
+  notifs?: number;
+}) => {
   const isSelected = selected === title;
   
   return (
@@ -143,7 +150,7 @@ const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
       onClick={() => setSelected(title)}
       className={`relative flex h-11 w-full items-center rounded-md transition-all duration-200 ${
         isSelected 
-          ? "bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 shadow-sm border-l-2 border-blue-500" 
+          ? "bg-amber-50 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 shadow-sm border-l-2 border-amber-500" 
           : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200"
       }`}
     >
@@ -162,7 +169,7 @@ const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
       )}
 
       {notifs && open && (
-        <span className="absolute right-3 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 dark:bg-blue-600 text-xs text-white font-medium">
+        <span className="absolute right-3 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 dark:bg-amber-600 text-xs text-white font-medium">
           {notifs}
         </span>
       )}
@@ -170,7 +177,7 @@ const Option = ({ Icon, title, selected, setSelected, open, notifs }) => {
   );
 };
 
-const TitleSection = ({ open }) => {
+const TitleSection = ({ open }: { open: boolean }) => {
   return (
     <div className="mb-6 border-b border-gray-200 dark:border-gray-800 pb-4">
       <div className="flex cursor-pointer items-center justify-between rounded-md p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800">
@@ -201,7 +208,7 @@ const TitleSection = ({ open }) => {
 
 const Logo = () => {
   return (
-    <div className="grid size-10 shrink-0 place-content-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm">
+    <div className="grid size-10 shrink-0 place-content-center rounded-lg bg-linear-to-br from-amber-500 to-amber-600 shadow-sm">
       <svg
         width="20"
         height="auto"
@@ -221,7 +228,7 @@ const Logo = () => {
   );
 };
 
-const ToggleClose = ({ open, setOpen }) => {
+const ToggleClose = ({ open, setOpen }: { open: boolean; setOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
   return (
     <button
       onClick={() => setOpen(!open)}
@@ -249,7 +256,7 @@ const ToggleClose = ({ open, setOpen }) => {
   );
 };
 
-const ExampleContent = ({ isDark, setIsDark }) => {
+const ExampleContent = ({ isDark, setIsDark }: { isDark: boolean; setIsDark: React.Dispatch<React.SetStateAction<boolean>> }) => {
   return (
     <div className="flex-1 bg-gray-50 dark:bg-gray-950 p-6 overflow-auto">
       {/* Header */}
@@ -283,8 +290,8 @@ const ExampleContent = ({ isDark, setIsDark }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="p-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <DollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+              <DollarSign className="h-5 w-5 text-amber-600 dark:text-amber-400" />
             </div>
             <TrendingUp className="h-4 w-4 text-green-500" />
           </div>
@@ -337,14 +344,14 @@ const ExampleContent = ({ isDark, setIsDark }) => {
           <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Activity</h3>
-              <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">
+              <button className="text-sm text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-medium">
                 View all
               </button>
             </div>
             <div className="space-y-4">
               {[
                 { icon: DollarSign, title: "New sale recorded", desc: "Order #1234 completed", time: "2 min ago", color: "green" },
-                { icon: Users, title: "New user registered", desc: "john.doe@example.com joined", time: "5 min ago", color: "blue" },
+                { icon: Users, title: "New user registered", desc: "john.doe@example.com joined", time: "5 min ago", color: "amber" },
                 { icon: Package, title: "Product updated", desc: "iPhone 15 Pro stock updated", time: "10 min ago", color: "purple" },
                 { icon: Activity, title: "System maintenance", desc: "Scheduled backup completed", time: "1 hour ago", color: "orange" },
                 { icon: Bell, title: "New notification", desc: "Marketing campaign results", time: "2 hours ago", color: "red" },
@@ -352,14 +359,14 @@ const ExampleContent = ({ isDark, setIsDark }) => {
                 <div key={i} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer">
                   <div className={`p-2 rounded-lg ${
                     activity.color === 'green' ? 'bg-green-50 dark:bg-green-900/20' :
-                    activity.color === 'blue' ? 'bg-blue-50 dark:bg-blue-900/20' :
+                    activity.color === 'amber' ? 'bg-amber-50 dark:bg-amber-900/20' :
                     activity.color === 'purple' ? 'bg-purple-50 dark:bg-purple-900/20' :
                     activity.color === 'orange' ? 'bg-orange-50 dark:bg-orange-900/20' :
                     'bg-red-50 dark:bg-red-900/20'
                   }`}>
                     <activity.icon className={`h-4 w-4 ${
                       activity.color === 'green' ? 'text-green-600 dark:text-green-400' :
-                      activity.color === 'blue' ? 'text-blue-600 dark:text-blue-400' :
+                      activity.color === 'amber' ? 'text-amber-600 dark:text-amber-400' :
                       activity.color === 'purple' ? 'text-purple-600 dark:text-purple-400' :
                       activity.color === 'orange' ? 'text-orange-600 dark:text-orange-400' :
                       'text-red-600 dark:text-red-400'
@@ -392,7 +399,7 @@ const ExampleContent = ({ isDark, setIsDark }) => {
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">3.2%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '32%' }}></div>
+                <div className="bg-amber-500 h-2 rounded-full" style={{ width: '32%' }}></div>
               </div>
               
               <div className="flex justify-between items-center">

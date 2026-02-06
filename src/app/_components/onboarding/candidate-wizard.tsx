@@ -91,13 +91,13 @@ export function CandidateWizard() {
             <div 
               className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 transition-colors ${
                 candidate.step >= s.id 
-                  ? "bg-indigo-600 text-white" 
+                  ? "bg-amber-600 text-white" 
                   : "bg-slate-100 text-slate-400"
               }`}
             >
               {candidate.step > s.id ? <CheckCircle2 size={20} /> : s.id}
             </div>
-            <span className={`text-xs font-medium ${candidate.step >= s.id ? "text-indigo-900" : "text-slate-400"}`}>
+            <span className={`text-xs font-medium ${candidate.step >= s.id ? "text-amber-900" : "text-slate-400"}`}>
               {s.title}
             </span>
           </div>
@@ -148,8 +148,8 @@ export function CandidateWizard() {
                       variant="outline" 
                       className={`cursor-pointer px-3 py-2 text-sm transition-all ${
                         candidate.skills.includes(skill)
-                          ? "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700" 
-                          : "hover:border-indigo-400 hover:text-indigo-600"
+                          ? "bg-amber-600 text-white border-amber-600 hover:bg-amber-700" 
+                          : "hover:border-amber-400 hover:text-amber-600"
                       }`}
                       onClick={() => toggleSkill(skill)}
                     >
@@ -177,7 +177,7 @@ export function CandidateWizard() {
                       <Label className="mb-2 block text-xs uppercase tracking-wider text-slate-500">Selected Skills</Label>
                       <div className="flex flex-wrap gap-2">
                           {candidate.skills.map(skill => (
-                              <Badge key={skill} className="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 border-0 flex items-center gap-1">
+                              <Badge key={skill} className="bg-amber-100 text-amber-700 hover:bg-amber-200 border-0 flex items-center gap-1">
                                   {skill}
                                   <button onClick={() => toggleSkill(skill)} className="hover:text-red-500 ml-1">×</button>
                               </Badge>
@@ -217,7 +217,7 @@ export function CandidateWizard() {
             </Button>
             <Button 
                 onClick={handleNext} 
-                className="bg-indigo-600 hover:bg-indigo-700 min-w-30"
+                className="bg-amber-600 hover:bg-amber-700 min-w-30"
                 disabled={updateProfile.isPending || (candidate.step === 1 && (!candidate.location || !candidate.bio))}
             >
                 {updateProfile.isPending ? (

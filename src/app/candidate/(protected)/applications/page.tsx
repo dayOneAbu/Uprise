@@ -8,11 +8,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "~/app/_components/ui/table"; // Need to install table
+} from "~/app/_components/ui/table";
 import { Badge } from "~/app/_components/ui/badge";
 import { Button } from "~/app/_components/ui/button";
+import { Card, CardContent } from "~/app/_components/ui/card";
 import Link from "next/link";
-import { ExternalLink, Search } from "lucide-react";
+import { ExternalLink, Search, FileText } from "lucide-react";
 import { Input } from "~/app/_components/ui/input";
 
 export default async function CandidateApplicationsPage() {
@@ -20,67 +21,91 @@ export default async function CandidateApplicationsPage() {
     headers: await headers(),
   });
 
-  // TODO: Fetch real applications via TRPC
-  // const applications = await api.application.listMyApplications.query();
-  
-  // Mock Data
-  const applications = [
-    { id: "1", jobTitle: "Frontend Intern", company: "Tech Corp", status: "submitted", date: "2023-10-01" },
-    { id: "2", jobTitle: "Backend Intern", company: "Startup Inc", status: "reviewing", date: "2023-10-05" },
-    { id: "3", jobTitle: "Design Intern", company: "Creative Studio", status: "rejected", date: "2023-09-20" },
-  ];
+  const applications = await api.application.listMyApplications();
+
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+    switch (status) {
+      case "ACCEPTED": return "default";
+      case "REJECTED": return "destructive";
+      case "SUBMITTED": return "secondary";
+      default: return "outline";
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-           <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
-           <p className="text-gray-500">Track the status of your internship applications.</p>
+           <h1 className="text-4xl font-bold tracking-tight text-foreground">My Applications</h1>
+           <p className="text-muted-foreground mt-2 text-lg">Track the status of your internship applications.</p>
         </div>
         <div className="relative w-full md:w-64">
-           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-           <Input placeholder="Search applications..." className="pl-9 bg-white" />
+           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+           <Input placeholder="Search applications..." className="pl-9" />
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Job Title</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Date Applied</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {applications.map((app) => (
-              <TableRow key={app.id}>
-                <TableCell className="font-medium">{app.jobTitle}</TableCell>
-                <TableCell>{app.company}</TableCell>
-                <TableCell>{app.date}</TableCell>
-                <TableCell>
-                  <Badge variant={
-                    app.status === "submitted" ? "outline" : 
-                    app.status === "reviewing" ? "secondary" : 
-                    app.status === "rejected" ? "destructive" : "default"
-                  }>
-                    {app.status.toUpperCase()}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/candidate/applications/${app.id}`}>
-                        View <ExternalLink className="ml-2 h-3 w-3" />
-                    </Link>
-                  </Button>
-                </TableCell>
+      {applications.length === 0 ? (
+        <Card className="border-border/50">
+          <CardContent className="p-12 text-center">
+            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No applications yet</h3>
+            <p className="text-sm text-muted-foreground mb-6">
+              Start applying to jobs to see your applications here
+            </p>
+            <Button asChild>
+              <Link href="/candidate/jobs">
+                Browse Jobs
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-border/50">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Job Title</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>Date Applied</TableHead>
+                <TableHead>Score</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Action</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {applications.map((app) => (
+                <TableRow key={app.id}>
+                  <TableCell className="font-medium">{app.job?.title ?? "Unknown"}</TableCell>
+                  <TableCell>{app.job?.company?.name ?? "Unknown"}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {new Date(app.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {app.score !== null ? (
+                      <span className="text-sm font-medium">{app.score}%</span>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">Pending</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(app.status)}>
+                      {app.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/candidate/applications/${app.id}`}>
+                          View <ExternalLink className="ml-2 h-3 w-3" />
+                      </Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      )}
     </div>
   );
 }

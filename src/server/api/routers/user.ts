@@ -312,4 +312,98 @@ export const userRouter = createTRPCRouter({
             totalReviews: reviewCount,
         };
     }),
+
+    // --------------------------------------------------------------------------
+    // CALCULATE JSS (Job Success Score) - Public
+    // Core reputation metric for MeritMatch
+    // --------------------------------------------------------------------------
+    getJSS: publicProcedure
+        .input(z.object({ userId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const user = await ctx.db.user.findUnique({
+                where: { id: input.userId },
+                select: {
+                    successRate: true,
+                    totalEarnings: true,
+                    createdAt: true,
+                }
+            });
+
+            if (!user) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "User not found",
+                });
+            }
+
+            // Get contract and application data
+            const [contracts, applications, reviews] = await Promise.all([
+                ctx.db.contract.findMany({
+                    where: { internId: input.userId },
+                    select: { status: true }
+                }),
+                ctx.db.application.findMany({
+                    where: { candidateId: input.userId },
+                    select: { score: true }
+                }),
+                ctx.db.review.findMany({
+                    where: { revieweeId: input.userId },
+                    select: { rating: true, isPrivate: true }
+                })
+            ]);
+
+            // JSS Calculation (Job Success Score)
+            // Based on: Completion Rate, Average Rating, AI Scores, Experience
+
+            // 1. Completion Rate (40% weight)
+            const completedContracts = contracts.filter(c => c.status === "COMPLETED").length;
+            const totalContracts = contracts.length;
+            const completionRate = totalContracts > 0 ? (completedContracts / totalContracts) * 100 : 0;
+
+            // 2. Average Public Rating (30% weight)
+            const publicReviews = reviews.filter(r => !r.isPrivate);
+            const avgPublicRating = publicReviews.length > 0
+                ? publicReviews.reduce((sum, r) => sum + r.rating, 0) / publicReviews.length
+                : 0;
+
+            // 3. Average Private Trust Score (20% weight)
+            const privateReviews = reviews.filter(r => r.isPrivate);
+            const avgPrivateScore = privateReviews.length > 0
+                ? privateReviews.reduce((sum, r) => sum + r.rating, 0) / privateReviews.length
+                : 0;
+
+            // 4. AI Sprint Scores (10% weight)
+            const validScores = applications.filter(a => a.score !== null).map(a => a.score!);
+            const avgAiScore = validScores.length > 0
+                ? validScores.reduce((sum, score) => sum + score, 0) / validScores.length
+                : 0;
+
+            // Calculate JSS
+            const jss = Math.round(
+                completionRate * 0.4 +           // 40%
+                (avgPublicRating / 5) * 30 +     // 30% (normalized to 0-30)
+                (avgPrivateScore / 5) * 20 +     // 20% (normalized to 0-20)
+                (avgAiScore / 100) * 10          // 10% (normalized to 0-10)
+            );
+
+            // Determine badge level
+            let badge = "BEGINNER";
+            if (jss >= 95 && totalContracts >= 10) badge = "EXPERT";
+            else if (jss >= 90 && totalContracts >= 5) badge = "TOP_RATED";
+            else if (jss >= 70 && totalContracts >= 1) badge = "RISING_TALENT";
+
+            return {
+                score: Math.min(100, Math.max(0, jss)), // Clamp 0-100
+                badge,
+                breakdown: {
+                    completionRate: Math.round(completionRate),
+                    avgPublicRating: Math.round(avgPublicRating * 10) / 10,
+                    avgPrivateScore: Math.round(avgPrivateScore * 10) / 10,
+                    avgAiScore: Math.round(avgAiScore),
+                    totalContracts,
+                    totalApplications: applications.length,
+                    totalReviews: reviews.length,
+                }
+            };
+        }),
 });

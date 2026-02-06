@@ -14,7 +14,7 @@ const Button = React.forwardRef<
     variant?: "default" | "outline" | "ghost";
     size?: "default" | "sm" | "lg";
   }
->(({ className, _variant = "default", size = "default", ...props }, ref) => {
+>(({ className, variant = "default", size = "default", ...props }, ref) => {
   return (
     <button
       className={cn(
@@ -118,7 +118,9 @@ const DotMap = () => {
     if (!canvas) return;
 
     const resizeObserver = new ResizeObserver(entries => {
-      const { width, height } = entries[0].contentRect;
+      const contentRect = entries[0]?.contentRect;
+      if (!contentRect) return;
+      const { width, height } = contentRect;
       setDimensions({ width, height });
       canvas.width = width;
       canvas.height = height;
@@ -134,8 +136,9 @@ const DotMap = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    const ctx = context;
 
     const dots = generateDots(dimensions.width, dimensions.height);
     let animationFrameId: number;
@@ -247,7 +250,7 @@ const SignInCard = () => {
       >
         {/* Left side - Map */}
         <div className="hidden md:block w-1/2 h-[600px] relative overflow-hidden border-r border-[#1f2130]">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0f1120] to-[#151929]">
+          <div className="absolute inset-0 bg-linear-to-br from-[#0f1120] to-[#151929]">
             <DotMap />
             
             {/* Logo and text overlay */}
@@ -258,7 +261,7 @@ const SignInCard = () => {
                 transition={{ delay: 0.6, duration: 0.5 }}
                 className="mb-6"
               >
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                <div className="h-12 w-12 rounded-full bg-linear-to-br from-amber-500 to-amber-600 flex items-center justify-center">
                   <ArrowRight className="text-white h-6 w-6" />
                 </div>
               </motion.div>
@@ -266,7 +269,7 @@ const SignInCard = () => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7, duration: 0.5 }}
-                className="text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500"
+                className="text-3xl font-bold mb-2 text-center text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-500"
               >
                 Travel Connect
               </motion.h2>
@@ -333,7 +336,7 @@ const SignInCard = () => {
             <form className="space-y-5">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
-                  Email <span className="text-blue-500">*</span>
+                  Email <span className="text-amber-500">*</span>
                 </label>
                 <Input
                   id="email"
@@ -348,7 +351,7 @@ const SignInCard = () => {
               
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
-                  Password <span className="text-blue-500">*</span>
+                  Password <span className="text-amber-500">*</span>
                 </label>
                 <div className="relative">
                   <Input
@@ -380,8 +383,8 @@ const SignInCard = () => {
                 <Button
                   type="submit"
                   className={cn(
-                    "w-full bg-gradient-to-r relative overflow-hidden from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-2 rounded-lg transition-all duration-300",
-                    isHovered ? "shadow-lg shadow-blue-500/25" : ""
+                    "w-full bg-linear-to-r relative overflow-hidden from-amber-600 to-amber-600 hover:from-amber-500 hover:to-amber-500 text-white py-2 rounded-lg transition-all duration-300",
+                    isHovered ? "shadow-lg shadow-amber-500/25" : ""
                   )}
                   onClick={(e) => {
                     e.preventDefault();
@@ -397,7 +400,7 @@ const SignInCard = () => {
                       initial={{ left: "-100%" }}
                       animate={{ left: "100%" }}
                       transition={{ duration: 1, ease: "easeInOut" }}
-                      className="absolute top-0 bottom-0 left-0 w-20 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      className="absolute top-0 bottom-0 left-0 w-20 bg-linear-to-r from-transparent via-white/20 to-transparent"
                       style={{ filter: "blur(8px)" }}
                     />
                   )}
@@ -405,7 +408,7 @@ const SignInCard = () => {
               </motion.div>
               
               <div className="text-center mt-6">
-                <a href="#" className="text-blue-500 hover:text-blue-400 text-sm transition-colors">
+                <a href="#" className="text-amber-500 hover:text-amber-400 text-sm transition-colors">
                   Forgot password?
                 </a>
               </div>
@@ -419,7 +422,7 @@ const SignInCard = () => {
 
 const Index = () => {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#060818] to-[#0d1023] p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-linear-to-br from-[#060818] to-[#0d1023] p-4">
       <SignInCard />
     </div>
   );

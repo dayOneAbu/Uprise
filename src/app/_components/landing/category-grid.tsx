@@ -17,21 +17,21 @@ const categories = [
 
 export function CategoryGrid() {
   return (
-    <div className="py-16 md:py-24 bg-slate-50">
+    <div className="py-16 md:py-24 bg-muted/30">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900 mb-8 md:mb-12">
+        <h2 className="text-3xl font-bold tracking-tight text-foreground mb-8 md:mb-12">
           Explore internships by category
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {categories.map((category) => (
             <Link href={`/search?category=${category.name}`} key={category.name}>
-                <Card className="p-6 hover:shadow-lg hover:border-blue-400 transition-all cursor-pointer group h-full border-slate-200">
-                <div className="mb-4 text-slate-500 group-hover:text-blue-600 transition-colors">
+                <Card className="p-6 hover:shadow-lg hover:border-primary transition-all cursor-pointer group h-full border-border/50">
+                <div className="mb-4 text-muted-foreground group-hover:text-primary transition-colors">
                     <category.icon size={32} strokeWidth={1.5} />
                 </div>
-                <h3 className="font-semibold text-lg text-slate-900 mb-1">{category.name}</h3>
-                <p className="text-sm text-slate-500">{category.count}</p>
+                <h3 className="font-semibold text-lg text-foreground mb-1">{category.name}</h3>
+                <p className="text-sm text-muted-foreground">{category.count}</p>
                 </Card>
             </Link>
           ))}

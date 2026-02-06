@@ -1,74 +1,40 @@
 "use client";
 
+import { toast } from "sonner";
 import React, { useState, useRef, useEffect } from "react";
-import { Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, ArrowRight, ShieldCheck, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { authClient } from "~/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { cn } from "~/lib/utils";
+import { Button } from "~/app/_components/ui/button";
+import { Input } from "~/app/_components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "~/lib/schemas";
+import type { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/app/_components/ui/form";
 
-// Custom Button Component
-const Button = React.forwardRef<
-  HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: "default" | "outline" | "ghost";
-    size?: "default" | "sm" | "lg";
-  }
->(({ className, _variant = "default", size = "default", ...props }, ref) => {
-  return (
-    <button
-      className={cn(
-        "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
-        size === "default" && "h-10 px-4 py-2",
-        size === "sm" && "h-9 px-3",
-        size === "lg" && "h-11 px-8",
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
-  );
-});
-Button.displayName = "Button";
-
-// Custom Input Component
-const Input = React.forwardRef<
-  HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement>
->(({ className, ...props }, ref) => {
-  return (
-    <input
-      className={cn(
-        "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
-  );
-});
-Input.displayName = "Input";
+type LoginFormData = z.infer<typeof loginSchema>;
 
 // DotMap Component (Simplified/Abstracted from starter)
-// RoutePoint type removed (not used in admin visualization)
-
 const DotMap = () => {
-    // ... (Reusing the map logic from the starter for the 'cool' effect, maybe simplified or kept as is)
-    // For brevity in this artifact, reusing the logic provided in the prompt's starter code
-    // In a real scenario, this might be a separate component import. 
-    // I will include the full code to ensure it works as a standalone page component.
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-  // routes removed: not used in this simplified admin dot visualization
 
   const generateDots = (width: number, height: number) => {
     const dots = [];
     const gap = 12;
-    // ... Simplified map generation logic
     for (let x = 0; x < width; x += gap) {
       for (let y = 0; y < height; y += gap) {
-          if (Math.random() > 0.8) { // Just random stars/nodes for admin abstract feel
+          if (Math.random() > 0.8) { 
              dots.push({ x, y, radius: 1, opacity: Math.random() * 0.5 + 0.1 });
           }
       }
@@ -80,6 +46,7 @@ const DotMap = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const resizeObserver = new ResizeObserver(entries => {
+      if (!entries[0]) return;
       const { width, height } = entries[0].contentRect;
       setDimensions({ width, height });
       canvas.width = width;
@@ -119,22 +86,27 @@ const DotMap = () => {
 
 export default function AdminLoginPage() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     await authClient.signIn.email({
-        email,
-        password,
-        callbackURL: "/admin", // Assuming /admin exists or will be created
+        email: data.email,
+        password: data.password,
+        callbackURL: "/admin", 
     }, {
         onSuccess: () => router.push("/admin"),
         onError: (ctx) => {
-            alert(ctx.error.message);
+            toast.error(ctx.error.message);
             setIsLoading(false);
         }
     });
@@ -177,59 +149,79 @@ export default function AdminLoginPage() {
                 <h1 className="text-2xl font-bold mb-1 text-white">Authenticate</h1>
                 <p className="text-gray-400 mb-8">Enter admin credentials</p>
                 
-                <form onSubmit={handleSignIn} className="space-y-5">
-                <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
-                    <Input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="bg-zinc-950 border-zinc-800 text-gray-200 focus:border-red-500/50 transition-colors"
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">Email</FormLabel>
+                          <FormControl>
+                            <Input
+                                type="email"
+                                className="bg-zinc-950 border-zinc-800 text-gray-200 focus:border-red-500/50 transition-colors"
+                                {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                </div>
-                
-                <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Password</label>
-                    <div className="relative">
-                    <Input
-                        type={isPasswordVisible ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="bg-zinc-950 border-zinc-800 text-gray-200 focus:border-red-500/50 transition-colors pr-10"
+                    
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-400">Password</FormLabel>
+                          <div className="relative">
+                            <FormControl>
+                                <Input
+                                    type={isPasswordVisible ? "text" : "password"}
+                                    className="bg-zinc-950 border-zinc-800 text-gray-200 focus:border-red-500/50 transition-colors pr-10"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <button
+                                type="button"
+                                className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-300"
+                                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                            >
+                                {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                    <button
-                        type="button"
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-300"
-                        onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                    
+                    <motion.div 
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="pt-4"
                     >
-                        {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
-                    </div>
-                </div>
-                
-                <motion.div 
-                                  whileHover={{ scale: 1.01 }}
-                                  whileTap={{ scale: 0.98 }}
-                                  className="pt-4"
-                              >
-                    <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className={cn(
-                        "w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-semibold py-2 rounded-lg transition-all duration-300 shadow-lg shadow-red-900/20",
-                        isLoading && "opacity-70 cursor-not-allowed"
-                    )}
-                    >
-                        {isLoading ? "Verifying..." : (
-                            <span className="flex items-center justify-center">
-                                Access Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-                            </span>
-                        )}
-                    </Button>
-                </motion.div>
-                </form>
+                        <Button
+                            type="submit"
+                            disabled={isLoading}
+                            className={cn(
+                                "w-full bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-500 hover:to-amber-500 text-white font-semibold py-2 rounded-lg transition-all duration-300 shadow-lg shadow-red-900/20",
+                                isLoading && "opacity-70 cursor-not-allowed"
+                            )}
+                        >
+                            {isLoading ? (
+                                <>
+                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...
+                                </>
+                            ) : (
+                                <span className="flex items-center justify-center">
+                                    Access Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                                </span>
+                            )}
+                        </Button>
+                    </motion.div>
+                  </form>
+                </Form>
             </div>
         </div>
       </motion.div>

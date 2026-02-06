@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "~/lib/schemas";
@@ -47,7 +49,7 @@ export default function AdminSignupPage() {
              router.push("/admin");
         },
         onError: (ctx) => {
-            alert(ctx.error.message);
+            toast.error(ctx.error.message);
             setIsLoading(false);
         }
     });

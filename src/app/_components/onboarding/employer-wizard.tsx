@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
@@ -34,7 +36,7 @@ export function EmployerWizard() {
       router.refresh();
     },
     onError: (err) => {
-        alert("Error creating company: " + err.message);
+        toast.error("Error creating company: " + err.message);
     }
   });
 
@@ -87,13 +89,13 @@ export function EmployerWizard() {
             <div 
               className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 transition-colors ${
                 employer.step >= s.id 
-                  ? "bg-blue-600 text-white" 
+                  ? "bg-amber-600 text-white" 
                   : "bg-slate-100 text-slate-400"
               }`}
             >
               {employer.step > s.id ? <CheckCircle2 size={20} /> : s.id}
             </div>
-            <span className={`text-xs font-medium ${employer.step >= s.id ? "text-blue-900" : "text-slate-400"}`}>
+            <span className={`text-xs font-medium ${employer.step >= s.id ? "text-amber-900" : "text-slate-400"}`}>
               {s.title}
             </span>
           </div>
@@ -102,7 +104,7 @@ export function EmployerWizard() {
 
       <Card className="border-slate-200 shadow-xl">
         <CardHeader>
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 text-blue-600">
+            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mb-4 text-amber-600">
                 <Building2 size={24} />
             </div>
           <CardTitle className="text-2xl">{STEPS[employer.step - 1]?.title}</CardTitle>
@@ -185,7 +187,7 @@ export function EmployerWizard() {
             </Button>
             <Button 
                 onClick={handleNext} 
-                className="bg-blue-600 hover:bg-blue-700 min-w-30"
+                className="bg-amber-600 hover:bg-amber-700 min-w-30"
                 disabled={createCompany.isPending || (employer.step === 1 && (!employer.name || !employer.slug))}
             >
                 {createCompany.isPending ? (
