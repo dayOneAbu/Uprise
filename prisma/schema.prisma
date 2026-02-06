@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  role          String   @default("CANDIDATE")
+  successRate   Int      @default(0)
+  totalEarnings Float    @default(0)
+  badge         String   @default("NONE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  profile      Profile?
+  companyId    String?
+  company      Company?      @relation(fields: [companyId], references: [id])
+  sessions     Session[]
+  accounts     Account[]
+  applications Application[]
+  contracts    Contract[]    @relation("InternContracts")
+  reviewsGiven Review[]      @relation("Reviewer")
+  reviewsRec   Review[]      @relation("Reviewee")
+  jobsPosted   Job[]         @relation("EmployerJobs")
+
+  @@map("user")
+}
+
+model Profile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio          String?
+  skills       String?
+  location     String?
+  portfolioUrl String?
+}
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logoUrl   String?
+  aiCredits Int      @default(50)
+  createdAt DateTime @default(now())
+  members   User[]
+  jobs      Job[]
+}
+
+model Job {
+  id            String        @id @default(cuid())
+  title         String
+  description   String
+  status        String        @default("OPEN")
+  testPrompt    String
+  gradingRubric String?
+  companyId     String
+  company       Company       @relation(fields: [companyId], references: [id])
+  employerId    String
+  employer      User          @relation("EmployerJobs", fields: [employerId], references: [id])
+  applications  Application[]
+  contracts     Contract[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([companyId])
+  @@index([employerId])
+}
+
+model Application {
+  id            String   @id @default(cuid())
+  status        String   @default("SUBMITTED")
+  answerContent String
+  score         Int?
+  aiFeedback    String?
+  aiAnalysis    String?
+  isAiFlagged   Boolean  @default(false)
+  candidateId   String
+  candidate     User     @relation(fields: [candidateId], references: [id])
+  jobId         String
+  job           Job      @relation(fields: [jobId], references: [id])
+  createdAt     DateTime @default(now())
+
+  @@unique([candidateId, jobId])
+  @@index([jobId, score])
+}
+
+model Contract {
+  id        String    @id @default(cuid())
+  status    String    @default("ACTIVE")
+  internId  String
+  intern    User      @relation("InternContracts", fields: [internId], references: [id])
+  jobId     String
+  job       Job       @relation(fields: [jobId], references: [id])
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  reviews   Review[]
+
+  @@index([internId])
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  contractId   String
+  contract     Contract @relation(fields: [contractId], references: [id])
+  reviewerId   String
+  reviewer     User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  revieweeId   String
+  reviewee     User     @relation("Reviewee", fields: [revieweeId], references: [id])
+  rating       Int
+  comment      String?
+  privateScore Int?
+  isPrivate    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
