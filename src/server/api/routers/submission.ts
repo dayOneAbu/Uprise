@@ -147,7 +147,6 @@ export const submissionRouter = createTRPCRouter({
 
             // Only candidate who submitted, challenge owner, or admin can view
             const isOwner = submission.candidateId === ctx.session.user.id;
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             const isChallengeOwner = submission.challenge?.employerId === ctx.session.user.id;
             const isAdmin = ctx.session.user.role === UserRole.ADMIN;
 

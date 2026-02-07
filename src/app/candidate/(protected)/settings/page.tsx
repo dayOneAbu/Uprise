@@ -20,7 +20,7 @@ export default async function SettingsPage() {
 
   const user = await api.user.me();
 
-  async function updateProfile(formData: FormData) {
+  async function updateProfile(_formData: FormData) {
     "use server";
     // In a real app, use a server action or TRPC mutation
     // For now we just redirect to check it works

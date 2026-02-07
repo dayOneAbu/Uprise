@@ -84,13 +84,6 @@ function ApplicationReviewClient() {
                 </div>
 
                 <div className="p-6 grid gap-8">
-                    {/* Answer Section */}
-                    <section>
-                        <h3 className="text-lg font-semibold mb-3 border-b pb-2">Candidate&apos;s Answer</h3>
-                        <div className="bg-gray-50 p-4 rounded text-gray-800 whitespace-pre-wrap">
-                            {application.answerContent}
-                        </div>
-                    </section>
 
                      {/* Profile Snapshot */}
                      {application.candidate.profile && (

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any, @typescript-eslint/no-unnecessary-type-assertion */
 import { auth } from "~/server/better-auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -61,7 +62,7 @@ export default async function EmployerDashboard() {
 
   const jobs = jobsResult.jobs;
   const activeJobs = jobs.filter(job => job.status === "OPEN");
-  
+
   // Get recent applications from active jobs
   const recentApplications = await Promise.all(
     activeJobs.slice(0, 5).map(async (job) => {

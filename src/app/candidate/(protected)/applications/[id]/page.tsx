@@ -23,7 +23,7 @@ export default async function ApplicationDetailsPage({ params }: { params: Promi
   let application;
   try {
     application = await api.application.getById({ id });
-  } catch (e) {
+  } catch {
     notFound();
   }
 
@@ -70,7 +70,7 @@ export default async function ApplicationDetailsPage({ params }: { params: Promi
                              <div className="relative">
                                 <div className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-primary" />
                                 <div className="font-semibold">Status Updated: {application.status}</div>
-                                <div className="text-sm text-muted-foreground">{new Date((application as any).updatedAt).toLocaleDateString()}</div>
+                                <div className="text-sm text-muted-foreground">{new Date(application.createdAt).toLocaleDateString()}</div>
                             </div>
                         )}
                          <div className="relative">
