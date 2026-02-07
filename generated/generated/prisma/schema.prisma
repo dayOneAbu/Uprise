@@ -1,0 +1,286 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  role          UserRole @default(UNASSIGNED)
+  successRate   Int      @default(0)
+  totalEarnings Float    @default(0)
+  badge         Badge    @default(NONE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  profile      Profile?
+  companyId    String?
+  company      Company?      @relation(fields: [companyId], references: [id])
+  sessions     Session[]
+  accounts     Account[]
+  applications Application[]
+  contracts    Contract[]    @relation("InternContracts")
+  reviewsGiven Review[]      @relation("Reviewer")
+  reviewsRec   Review[]      @relation("Reviewee")
+  jobsPosted   Job[]         @relation("EmployerJobs")
+  challenges   Challenge[]   @relation("EmployerChallenges")
+  submissions  Submission[]
+  skillScores  SkillScore[]
+
+  @@map("user")
+}
+
+model Profile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio          String?
+  skills       String?
+  location     String?
+  portfolioUrl String?
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logoUrl     String?
+  website     String?
+  description String?
+  aiCredits   Int      @default(50)
+  createdAt   DateTime @default(now())
+  members     User[]
+  jobs        Job[]
+}
+
+model Job {
+  id              String        @id @default(cuid())
+  title           String
+  description     String
+  status          String        @default("OPEN")
+  locationType    String? // "remote" | "onsite" | "hybrid"
+  duration        Int? // months (1-6)
+  isPaid          Boolean       @default(false)
+  salaryRange     String? // "$15-25/hr" or "Unpaid"
+  skillsRequired  String? // required skills for the role (comma-separated)
+  experienceLevel String? // "beginner" | "intermediate" | "advanced"
+  companyId       String
+  company         Company       @relation(fields: [companyId], references: [id])
+  employerId      String
+  employer        User          @relation("EmployerJobs", fields: [employerId], references: [id])
+  applications    Application[]
+  contracts       Contract[]
+  challenges      Challenge[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([companyId])
+  @@index([employerId])
+}
+
+model Application {
+  id          String   @id @default(cuid())
+  status      String   @default("SUBMITTED")
+  candidateId String
+  candidate   User     @relation(fields: [candidateId], references: [id])
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id])
+  score       Int? // Match score 0-100
+  createdAt   DateTime @default(now())
+
+  @@unique([candidateId, jobId])
+  @@index([jobId])
+}
+
+model Contract {
+  id        String    @id @default(cuid())
+  status    String    @default("ACTIVE")
+  internId  String
+  intern    User      @relation("InternContracts", fields: [internId], references: [id])
+  jobId     String
+  job       Job       @relation(fields: [jobId], references: [id])
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  reviews   Review[]
+
+  @@index([internId])
+}
+
+model Review {
+  id           String   @id @default(cuid())
+  contractId   String
+  contract     Contract @relation(fields: [contractId], references: [id])
+  reviewerId   String
+  reviewer     User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  revieweeId   String
+  reviewee     User     @relation("Reviewee", fields: [revieweeId], references: [id])
+  rating       Int
+  comment      String?
+  privateScore Int?
+  isPrivate    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
+
+enum UserRole {
+  UNASSIGNED
+  CANDIDATE
+  EMPLOYER
+  ADMIN
+}
+
+enum Badge {
+  NONE
+  RISING_TALENT
+  TOP_RATED
+  EXPERT
+}
+
+enum ChallengeType {
+  CODE
+  DESIGN
+  WRITING
+  ANALYTICAL
+  DEBUGGING
+}
+
+enum SubmissionStatus {
+  PENDING
+  GRADING
+  COMPLETED
+  FLAGGED
+}
+
+model Challenge {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  type        ChallengeType
+  employerId  String
+  employer    User          @relation("EmployerChallenges", fields: [employerId], references: [id])
+  jobId       String?
+  job         Job?          @relation(fields: [jobId], references: [id])
+  tasks       Task[]
+  submissions Submission[]
+  isPublished Boolean       @default(false)
+  timeLimit   Int? // minutes
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([employerId])
+  @@index([jobId])
+}
+
+model Task {
+  id              String           @id @default(cuid())
+  challengeId     String
+  challenge       Challenge        @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  order           Int              @default(0)
+  rubric          String? // JSON grading criteria
+  createdAt       DateTime         @default(now())
+  submissionTasks SubmissionTask[]
+
+  @@index([challengeId])
+}
+
+model Submission {
+  id            String           @id @default(cuid())
+  challengeId   String
+  challenge     Challenge        @relation(fields: [challengeId], references: [id])
+  candidateId   String
+  candidate     User             @relation(fields: [candidateId], references: [id])
+  status        SubmissionStatus @default(PENDING)
+  overallScore  Int? // 0-100
+  skills        String? // JSON array of demonstrated skills
+  plagiarism    Boolean          @default(false)
+  feedback      String? // AI-generated feedback
+  taskResponses SubmissionTask[]
+  createdAt     DateTime         @default(now())
+  gradedAt      DateTime?
+
+  @@unique([candidateId, challengeId])
+  @@index([challengeId])
+  @@index([candidateId])
+}
+
+model SubmissionTask {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  taskId       String
+  task         Task       @relation(fields: [taskId], references: [id])
+  response     String // Text, URL, or JSON depending on task type
+  score        Int? // 0-100 per task
+  feedback     String?
+  createdAt    DateTime   @default(now())
+
+  @@index([submissionId])
+}
+
+model SkillScore {
+  id          String   @id @default(cuid())
+  candidateId String
+  candidate   User     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  skill       String // e.g., "React", "Python", "UI Design"
+  score       Int // 0-100
+  submissions Int      @default(0) // Number of challenges that contributed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([candidateId, skill])
+  @@index([candidateId])
+  @@index([skill])
+}

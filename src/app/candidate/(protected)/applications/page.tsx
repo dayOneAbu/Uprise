@@ -1,5 +1,3 @@
-import { auth } from "~/server/better-auth";
-import { headers } from "next/headers";
 import { api } from "~/trpc/server";
 import {
   Table,
@@ -9,7 +7,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/app/_components/ui/table";
-import { Badge } from "~/app/_components/ui/badge";
 import { Button } from "~/app/_components/ui/button";
 import { Card, CardContent } from "~/app/_components/ui/card";
 import Link from "next/link";
@@ -17,20 +14,8 @@ import { ExternalLink, Search, FileText } from "lucide-react";
 import { Input } from "~/app/_components/ui/input";
 
 export default async function CandidateApplicationsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
   const applications = await api.application.listMyApplications();
 
-  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
-    switch (status) {
-      case "ACCEPTED": return "default";
-      case "REJECTED": return "destructive";
-      case "SUBMITTED": return "secondary";
-      default: return "outline";
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -68,7 +53,6 @@ export default async function CandidateApplicationsPage() {
                 <TableHead>Job Title</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Date Applied</TableHead>
-                <TableHead>Score</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Action</TableHead>
               </TableRow>
@@ -82,16 +66,14 @@ export default async function CandidateApplicationsPage() {
                     {new Date(app.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    {app.score !== null ? (
-                      <span className="text-sm font-medium">{app.score}%</span>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">Pending</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(app.status)}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      app.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                      app.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                      app.status === 'SUBMITTED' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
                       {app.status}
-                    </Badge>
+                    </span>
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" asChild>

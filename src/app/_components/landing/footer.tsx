@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Facebook, Twitter, Linkedin, Instagram, Youtube } from "lucide-react";
+import { Facebook, Twitter, Linkedin, Instagram } from "lucide-react";
 
 export function Footer() {
   return (
@@ -48,7 +48,7 @@ export function Footer() {
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-4">
-             <span className="text-sm">© 2024 MeritMatch Global Inc.</span>
+             <span className="text-sm">© 2024 Uprise Global Inc.</span>
              <Link href="#" className="text-sm hover:text-foreground transition-colors">Terms of Service</Link>
              <Link href="#" className="text-sm hover:text-foreground transition-colors">Privacy Policy</Link>
           </div>

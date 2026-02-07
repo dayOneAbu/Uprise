@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "~/app/_components/ui/button";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { authClient } from "~/lib/auth-client";
 
 interface NavbarProps {
   session: {
@@ -18,17 +19,22 @@ export const Navbar: React.FC<NavbarProps> = ({ session }) => {
   const role = session?.user.role;
   const { setTheme, theme } = useTheme();
 
+  const handleSignOut = async () => {
+    await authClient.signOut();
+    window.location.href = "/";
+  };
+
   return (
     <nav className="flex items-center justify-between p-4 md:p-6 bg-background/95 backdrop-blur-sm sticky top-0 z-50 border-b border-border">
       <div className="flex items-center gap-8">
         <Link href="/" className="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">M</div>
-            MeritMatch
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground">U</div>
+            Uprise
         </Link>
         <div className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
             <Link href="/employer/auth/login" className="hover:text-foreground transition-colors">Find Talent</Link>
             <Link href="/candidate/auth/login" className="hover:text-foreground transition-colors">Find Internships</Link>
-            <Link href="/#why-meritmatch" className="hover:text-foreground transition-colors">Why MeritMatch</Link>
+            <Link href="/#why-uprise" className="hover:text-foreground transition-colors">Why Uprise</Link>
             
         </div>
       </div>
@@ -63,8 +69,12 @@ export const Navbar: React.FC<NavbarProps> = ({ session }) => {
                     </Button>
                 )}
 
-                <Button variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" asChild>
-                     <Link href="/api/auth/signout">Sign Out</Link>
+                <Button
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={handleSignOut}
+                >
+                  Sign Out
                 </Button>
             </div>
         ) : (

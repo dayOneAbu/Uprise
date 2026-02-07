@@ -1,25 +1,34 @@
 "use client";
 
-import { ShieldCheck, Award, Zap } from "lucide-react";
+import { ShieldCheck, Award, Zap, Shield, Users, Lock } from "lucide-react";
 
 export function WhyChooseUs() {
   return (
-    <div id="why-meritmatch" className="py-16 md:py-24 bg-background">
+    <div id="why-uprise" className="py-16 md:py-24 bg-background">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="grid md:grid-cols-2 gap-12 items-center">
            <div className="order-2 md:order-1 relative">
                 <div className="bg-primary/5 rounded-3xl p-8 md:p-12">
-                   <img 
-                        src="/api/placeholder/500/400?text=Safe+Hiring" 
-                        alt="Security illustration"
-                        className="w-full h-auto mix-blend-multiply opacity-80"
-                   />
+                   <div className="aspect-[5/4] w-full flex items-center justify-center">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-primary/10 rounded-full blur-3xl" />
+                        <div className="relative flex items-center justify-center w-32 h-32 bg-primary/20 rounded-2xl">
+                          <Shield className="w-16 h-16 text-primary" />
+                        </div>
+                        <div className="absolute -top-4 -right-4 bg-background rounded-full p-2 shadow-lg">
+                          <Users className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="absolute -bottom-4 -left-4 bg-background rounded-full p-2 shadow-lg">
+                          <Lock className="w-6 h-6 text-primary" />
+                        </div>
+                      </div>
+                   </div>
                 </div>
            </div>
            
            <div className="order-1 md:order-2">
              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-                Why businesses choose MeritMatch
+                Why businesses choose Uprise
              </h2>
              
              <div className="space-y-8">

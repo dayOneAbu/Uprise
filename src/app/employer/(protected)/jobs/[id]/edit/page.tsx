@@ -12,7 +12,6 @@ import { Button } from "~/app/_components/ui/button";
 import { Input } from "~/app/_components/ui/input";
 import { Textarea } from "~/app/_components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/app/_components/ui/card";
-import { Label } from "~/app/_components/ui/label";
 import { Badge } from "~/app/_components/ui/badge";
 import { Separator } from "~/app/_components/ui/separator";
 import {
@@ -63,8 +62,6 @@ export default function EditJobPage() {
       id: jobId,
       title: "",
       description: "",
-      testPrompt: "",
-      gradingRubric: "",
     },
   });
 
@@ -75,8 +72,6 @@ export default function EditJobPage() {
         id: jobId,
         title: job.title,
         description: job.description,
-        testPrompt: job.testPrompt,
-        gradingRubric: job.gradingRubric ?? "",
       });
     }
   }, [job, jobId, form]);
@@ -221,46 +216,7 @@ export default function EditJobPage() {
                       Define a technical challenge that candidates will complete to demonstrate their skills.
                     </p>
 
-                    <FormField
-                      control={form.control}
-                      name="testPrompt"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Test Prompt *</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              rows={4}
-                              placeholder="e.g. Build a responsive todo list application using React with the following requirements..."
-                              className="text-base resize-none"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="gradingRubric"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Grading Rubric (Optional)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              rows={3}
-                              placeholder="Define specific criteria for evaluation (e.g., code quality, functionality, creativity)..."
-                              className="text-base resize-none"
-                              {...field}
-                            />
-                          </FormControl>
-                          <p className="text-xs text-muted-foreground">
-                            Helps AI evaluate submissions more accurately
-                          </p>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Challenge editing currently not supported via this form - see new job form for structure */}
                   </div>
 
                   {/* Submit Button */}
@@ -333,16 +289,7 @@ export default function EditJobPage() {
                     </div>
                   )}
 
-                  {watchedValues.testPrompt && (
-                    <div>
-                      <h4 className="font-medium text-sm text-muted-foreground mb-2">TECHNICAL CHALLENGE</h4>
-                      <div className="bg-muted p-3 rounded-md">
-                        <p className="text-sm text-foreground line-clamp-3">
-                          {watchedValues.testPrompt}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+{/* Challenge preview removed until editing is supported */}
                 </div>
               ) : (
                 <div className="text-center py-8">

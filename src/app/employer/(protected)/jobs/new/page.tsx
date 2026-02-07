@@ -5,39 +5,48 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { jobSchema } from "~/lib/schemas";
+import { z } from "zod";
+
+const formSchema = jobSchema.omit({ companyId: true }).extend({
+  isPaid: z.boolean(),
+});
+type JobFormData = z.infer<typeof formSchema>;
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
-import { type z } from "zod";
+
 import { Button } from "~/app/_components/ui/button";
 import { Input } from "~/app/_components/ui/input";
 import { Textarea } from "~/app/_components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/app/_components/ui/card";
-import { Label } from "~/app/_components/ui/label";
 import { Badge } from "~/app/_components/ui/badge";
 import { Separator } from "~/app/_components/ui/separator";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "~/app/_components/ui/form";
+import { Label } from "~/app/_components/ui/label";
 import {
   Briefcase,
   FileText,
-  Code,
   CheckCircle,
   ArrowLeft,
   Save,
   Eye,
   Loader2,
   Lightbulb,
-  AlertCircle
+  AlertCircle,
+  Target,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 
-type JobFormData = z.infer<typeof jobSchema>;
+
 
 export default function PostJobPage() {
   const router = useRouter();
@@ -57,20 +66,65 @@ export default function PostJobPage() {
   const { data: user } = api.user.me.useQuery();
 
   const form = useForm<JobFormData>({
-    resolver: zodResolver(jobSchema),
+    resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      testPrompt: "",
-      gradingRubric: "",
+      locationType: undefined,
+      duration: undefined,
+      isPaid: false,
+      salaryRange: "",
+      skillsRequired: "",
+      experienceLevel: undefined,
+      challengeTitle: "",
+      challengeDescription: "",
+      challengeType: "CODE",
+      challengeTimeLimit: 60,
+      challengeTasks: [{ title: "", description: "" }],
     },
   });
+
+  // Challenge task management
+  const challengeTasks = form.watch("challengeTasks") ?? [];
+  
+  const addTask = () => {
+    const currentTasks = form.getValues("challengeTasks") ?? [];
+    form.setValue("challengeTasks", [...currentTasks, { title: "", description: "" }]);
+  };
+  
+  const removeTask = (index: number) => {
+    const currentTasks = form.getValues("challengeTasks") ?? [];
+    if (currentTasks.length > 1) {
+      form.setValue("challengeTasks", currentTasks.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateTask = (index: number, field: "title" | "description", value: string) => {
+    const currentTasks = form.getValues("challengeTasks") ?? [];
+    const newTasks = [...currentTasks];
+    newTasks[index] = { ...newTasks[index], [field]: value } as { title: string; description: string };
+    form.setValue("challengeTasks", newTasks);
+  };
 
   const onSubmit = (data: JobFormData) => {
     if (!user?.companyId) {
       toast.error("You need to belong to a company to post a job.");
       return;
     }
+    
+    // Validate challenge if being created
+    if (data.challengeTitle || data.challengeTasks?.some(t => t.title || t.description)) {
+      if (!data.challengeTitle || data.challengeTitle.length < 3) {
+        toast.error("Challenge title is required (min 3 characters)");
+        return;
+      }
+      if (!data.challengeTasks || data.challengeTasks.length === 0 || 
+          !data.challengeTasks.some(t => t.title && t.description)) {
+        toast.error("At least one complete challenge task is required");
+        return;
+      }
+    }
+    
     createJob.mutate({ ...data, companyId: user.companyId });
   };
 
@@ -119,9 +173,9 @@ export default function PostJobPage() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">Post New Job</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground">Post New Internship</h1>
             <p className="text-muted-foreground mt-1">
-              Create a job posting with AI-powered skill assessment
+              Create an internship posting with AI-powered candidate matching
             </p>
           </div>
         </div>
@@ -197,27 +251,171 @@ export default function PostJobPage() {
 
                 <Separator />
 
-                {/* AI Test Section */}
-                <div className="space-y-4">
+                {/* Job Details Section */}
+                <div className="space-y-6">
                   <div className="flex items-center gap-2">
-                    <Code className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-semibold">AI-Powered Skill Assessment</h3>
+                    <FileText className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-semibold">Job Details</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="locationType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Location Type</FormLabel>
+                          <FormControl>
+                            <select
+                              {...field}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <option value="">Select location type</option>
+                              <option value="remote">Remote</option>
+                              <option value="onsite">On-site</option>
+                              <option value="hybrid">Hybrid</option>
+                            </select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="duration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Duration (months)</FormLabel>
+                          <FormControl>
+                            <select
+                              {...field}
+                              value={field.value ?? ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <option value="">Select duration</option>
+                              <option value="1">1 month</option>
+                              <option value="2">2 months</option>
+                              <option value="3">3 months</option>
+                              <option value="4">4 months</option>
+                              <option value="5">5 months</option>
+                              <option value="6">6 months</option>
+                              <option value="9">9 months</option>
+                              <option value="12">12 months</option>
+                            </select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="isPaid"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Compensation</FormLabel>
+                          <FormControl>
+                            <select
+                              {...field}
+                              value={field.value ? "paid" : "unpaid"}
+                              onChange={(e) => field.onChange(e.target.value === "paid")}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <option value="unpaid">Unpaid</option>
+                              <option value="paid">Paid</option>
+                            </select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {form.watch("isPaid") && (
+                      <FormField
+                        control={form.control}
+                        name="salaryRange"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Salary Range</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="e.g. $15-25/hr or $2000/month"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="experienceLevel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Experience Level</FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <option value="">Select experience level</option>
+                            <option value="beginner">Beginner (First internship)</option>
+                            <option value="intermediate">Intermediate (Some experience)</option>
+                            <option value="advanced">Advanced (Multiple internships)</option>
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="skillsRequired"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Skills Required</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g. JavaScript, React, Node.js, SQL"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Separate skills with commas. AI will use this to match candidates.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Challenge Creation Section */}
+                <div className="space-y-6 pt-6 border-t">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-semibold">Skill Sprint Challenge</h3>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Define a technical challenge that candidates will complete to demonstrate their skills.
+                    Create a challenge that candidates must complete to apply. This proves their skills before you review their application.
                   </p>
 
                   <FormField
                     control={form.control}
-                    name="testPrompt"
+                    name="challengeTitle"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Test Prompt *</FormLabel>
+                        <FormLabel>Challenge Title *</FormLabel>
                         <FormControl>
-                          <Textarea
-                            rows={4}
-                            placeholder="e.g. Build a responsive todo list application using React with the following requirements..."
-                            className="text-base resize-none"
+                          <Input
+                            placeholder="e.g., Build a React Component"
                             {...field}
                           />
                         </FormControl>
@@ -228,25 +426,119 @@ export default function PostJobPage() {
 
                   <FormField
                     control={form.control}
-                    name="gradingRubric"
+                    name="challengeType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Grading Rubric (Optional)</FormLabel>
+                        <FormLabel>Challenge Type</FormLabel>
                         <FormControl>
-                          <Textarea
-                            rows={3}
-                            placeholder="Define specific criteria for evaluation (e.g., code quality, functionality, creativity)..."
-                            className="text-base resize-none"
+                          <select
                             {...field}
-                          />
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          >
+                            <option value="CODE">Code Challenge</option>
+                            <option value="DESIGN">Design Task</option>
+                            <option value="WRITING">Writing Assignment</option>
+                            <option value="ANALYTICAL">Analytical Problem</option>
+                            <option value="DEBUGGING">Debug Exercise</option>
+                          </select>
                         </FormControl>
-                        <p className="text-xs text-muted-foreground">
-                          Helps AI evaluate submissions more accurately
-                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="challengeDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Challenge Overview</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            rows={3}
+                            placeholder="Describe what the candidate needs to build or solve..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="challengeTimeLimit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Time Limit (minutes)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={5}
+                            max={180}
+                            {...field}
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Tasks */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Tasks ({challengeTasks.length})</FormLabel>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addTask}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Task
+                      </Button>
+                    </div>
+
+                    {challengeTasks.map((task, index) => (
+                      <Card key={index} className="border-muted">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-sm">Task {index + 1}</CardTitle>
+                            {challengeTasks.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeTask(index)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            )}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label>Task Title</Label>
+                            <Input
+                              placeholder="e.g., Implement the login form"
+                              value={task.title}
+                              onChange={(e) => updateTask(index, "title", e.target.value)}
+                            />
+                          </div>
+                          <div>
+                            <Label>Task Description</Label>
+                            <Textarea
+                              placeholder="Detailed instructions for this task..."
+                              rows={2}
+                              value={task.description}
+                              onChange={(e) => updateTask(index, "description", e.target.value)}
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Submit Button */}
@@ -317,12 +609,12 @@ export default function PostJobPage() {
                     </div>
                   )}
 
-                  {watchedValues.testPrompt && (
+                  {watchedValues.challengeDescription && (
                     <div>
                       <h4 className="font-medium text-sm text-muted-foreground mb-2">TECHNICAL CHALLENGE</h4>
                       <div className="bg-muted p-3 rounded-md">
                         <p className="text-sm text-foreground line-clamp-3">
-                          {watchedValues.testPrompt}
+                          {watchedValues.challengeDescription}
                         </p>
                       </div>
                     </div>

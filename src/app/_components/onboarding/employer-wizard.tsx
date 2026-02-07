@@ -127,7 +127,7 @@ export function EmployerWizard() {
               <div className="space-y-2">
                 <Label htmlFor="slug">Company Handle (Slug)</Label>
                 <div className="flex items-center">
-                    <span className="bg-slate-100 border border-r-0 border-input rounded-l-md px-3 py-2 text-slate-500 text-sm">meritmatch.com/c/</span>
+                    <span className="bg-slate-100 border border-r-0 border-input rounded-l-md px-3 py-2 text-slate-500 text-sm">uprise.com/c/</span>
                     <Input 
                     id="slug" 
                     placeholder="acme-corp"

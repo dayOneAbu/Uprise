@@ -1,9 +1,6 @@
 "use client";
 
-import { UserPlus, SearchCheck, Rocket, ChevronRight } from "lucide-react";
-import { Button } from "~/app/_components/ui/button";
-import { Card } from "~/app/_components/ui/card";
-import Link from "next/link"; // Added import
+import { UserPlus, SearchCheck, Rocket } from "lucide-react";
 
 const steps = [
   {
@@ -21,7 +18,7 @@ const steps = [
   {
     title: "Collaborate easily",
     description:
-      "Use MeritMatch to chat, share files, and collaborate from your desktop or mobile.",
+      "Use Uprise to chat, share files, and collaborate from your desktop or mobile.",
     icon: Rocket,
   },
 ];

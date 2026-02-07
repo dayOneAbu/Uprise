@@ -47,3 +47,4 @@ yarn-error.log*
 /.agent/workflows/*
 /.agent/*
 .cursorrules
+AI_SETUP.md

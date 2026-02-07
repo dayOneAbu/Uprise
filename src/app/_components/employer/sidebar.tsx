@@ -8,16 +8,25 @@ import {
   User,
   Settings,
   HelpCircle,
+  LogOut,
   ChevronDown,
   ChevronsRight,
+  Target,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { authClient } from "~/lib/auth-client";
 
 export const EmployerSidebar = () => {
   const [open, setOpen] = useState(true);
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    window.location.href = "/";
+  };
 
   return (
     <nav
@@ -47,6 +56,20 @@ export const EmployerSidebar = () => {
           notifs={0}
         />
         <Option
+          Icon={Target}
+          title="Challenges"
+          href="/employer/challenges"
+          activePath="/employer/challenges"
+          open={open}
+        />
+        <Option
+          Icon={Users}
+          title="Talent Pool"
+          href="/employer/talent-pool"
+          activePath="/employer/talent-pool"
+          open={open}
+        />
+        <Option
           Icon={FileText}
           title="Contracts"
           href="/employer/contracts"
@@ -70,17 +93,33 @@ export const EmployerSidebar = () => {
           <Option
             Icon={Settings}
             title="Settings"
-            href="/employer/settings"
+            href="#"
             activePath="/employer/settings"
             open={open}
           />
           <Option
             Icon={HelpCircle}
             title="Help & Support"
-            href="/employer/support"
+            href="#"
             activePath="/employer/support"
             open={open}
           />
+          <button
+            onClick={handleLogout}
+            className={cn(
+              "relative flex h-11 w-full items-center rounded-md transition-all duration-200",
+              "text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive"
+            )}
+          >
+            <div className="grid h-full w-12 place-content-center">
+              <LogOut className="h-4 w-4" />
+            </div>
+            {open && (
+              <span className="text-sm font-medium transition-opacity duration-200 opacity-100">
+                Log Out
+              </span>
+            )}
+          </button>
         </div>
       )}
 
@@ -154,7 +193,7 @@ const TitleSection = ({ open }: { open: boolean }) => {
                  {/* TODO: Fetch dynamic company name */}
                 <div>
                   <span className="block text-sm font-semibold text-sidebar-foreground">
-                    MeritMatch
+                    Uprise
                   </span>
                   <span className="block text-xs text-sidebar-foreground/70">
                     Employer
@@ -173,7 +212,7 @@ const TitleSection = ({ open }: { open: boolean }) => {
 const Logo = () => {
   return (
     <div className="grid size-10 shrink-0 place-content-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-      <div className="font-bold text-xl">M</div>
+      <div className="font-bold text-xl">U</div>
     </div>
   );
 };

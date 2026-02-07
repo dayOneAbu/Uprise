@@ -31,6 +31,9 @@ model User {
   reviewsGiven Review[]      @relation("Reviewer")
   reviewsRec   Review[]      @relation("Reviewee")
   jobsPosted   Job[]         @relation("EmployerJobs")
+  challenges   Challenge[]   @relation("EmployerChallenges")
+  submissions  Submission[]
+  skillScores  SkillScore[]
 
   @@map("user")
 }
@@ -59,41 +62,42 @@ model Company {
 }
 
 model Job {
-  id            String        @id @default(cuid())
-  title         String
-  description   String
-  status        String        @default("OPEN")
-  testPrompt    String
-  gradingRubric String?
-  companyId     String
-  company       Company       @relation(fields: [companyId], references: [id])
-  employerId    String
-  employer      User          @relation("EmployerJobs", fields: [employerId], references: [id])
-  applications  Application[]
-  contracts     Contract[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id              String        @id @default(cuid())
+  title           String
+  description     String
+  status          String        @default("OPEN")
+  locationType    String? // "remote" | "onsite" | "hybrid"
+  duration        Int? // months (1-6)
+  isPaid          Boolean       @default(false)
+  salaryRange     String? // "$15-25/hr" or "Unpaid"
+  skillsRequired  String? // required skills for the role (comma-separated)
+  experienceLevel String? // "beginner" | "intermediate" | "advanced"
+  companyId       String
+  company         Company       @relation(fields: [companyId], references: [id])
+  employerId      String
+  employer        User          @relation("EmployerJobs", fields: [employerId], references: [id])
+  applications    Application[]
+  contracts       Contract[]
+  challenges      Challenge[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([companyId])
   @@index([employerId])
 }
 
 model Application {
-  id            String   @id @default(cuid())
-  status        String   @default("SUBMITTED")
-  answerContent String
-  score         Int?
-  aiFeedback    String?
-  aiAnalysis    String?
-  isAiFlagged   Boolean  @default(false)
-  candidateId   String
-  candidate     User     @relation(fields: [candidateId], references: [id])
-  jobId         String
-  job           Job      @relation(fields: [jobId], references: [id])
-  createdAt     DateTime @default(now())
+  id          String   @id @default(cuid())
+  status      String   @default("SUBMITTED")
+  candidateId String
+  candidate   User     @relation(fields: [candidateId], references: [id])
+  jobId       String
+  job         Job      @relation(fields: [jobId], references: [id])
+  score       Int? // Match score 0-100
+  createdAt   DateTime @default(now())
 
   @@unique([candidateId, jobId])
-  @@index([jobId, score])
+  @@index([jobId])
 }
 
 model Contract {
@@ -181,4 +185,103 @@ enum Badge {
   RISING_TALENT
   TOP_RATED
   EXPERT
+}
+
+enum ChallengeType {
+  CODE
+  DESIGN
+  WRITING
+  ANALYTICAL
+  DEBUGGING
+}
+
+enum SubmissionStatus {
+  PENDING
+  GRADING
+  COMPLETED
+  FLAGGED
+}
+
+model Challenge {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  type        ChallengeType
+  employerId  String
+  employer    User          @relation("EmployerChallenges", fields: [employerId], references: [id])
+  jobId       String?
+  job         Job?          @relation(fields: [jobId], references: [id])
+  tasks       Task[]
+  submissions Submission[]
+  isPublished Boolean       @default(false)
+  timeLimit   Int? // minutes
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([employerId])
+  @@index([jobId])
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  order       Int       @default(0)
+  rubric      String? // JSON grading criteria
+  createdAt   DateTime  @default(now())
+
+  submissionTasks SubmissionTask[]
+
+  @@index([challengeId])
+}
+
+model Submission {
+  id            String           @id @default(cuid())
+  challengeId   String
+  challenge     Challenge        @relation(fields: [challengeId], references: [id])
+  candidateId   String
+  candidate     User             @relation(fields: [candidateId], references: [id])
+  status        SubmissionStatus @default(PENDING)
+  overallScore  Int? // 0-100
+  skills        String? // JSON array of demonstrated skills
+  plagiarism    Boolean          @default(false)
+  feedback      String? // AI-generated feedback
+  taskResponses SubmissionTask[]
+  createdAt     DateTime         @default(now())
+  gradedAt      DateTime?
+
+  @@unique([candidateId, challengeId])
+  @@index([challengeId])
+  @@index([candidateId])
+}
+
+model SubmissionTask {
+  id           String     @id @default(cuid())
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  taskId       String
+  task         Task       @relation(fields: [taskId], references: [id])
+  response     String // Text, URL, or JSON depending on task type
+  score        Int? // 0-100 per task
+  feedback     String?
+  createdAt    DateTime   @default(now())
+
+  @@index([submissionId])
+}
+
+model SkillScore {
+  id          String   @id @default(cuid())
+  candidateId String
+  candidate   User     @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  skill       String // e.g., "React", "Python", "UI Design"
+  score       Int // 0-100
+  submissions Int      @default(0) // Number of challenges that contributed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([candidateId, skill])
+  @@index([candidateId])
+  @@index([skill])
 }

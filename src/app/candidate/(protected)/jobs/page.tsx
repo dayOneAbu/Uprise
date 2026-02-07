@@ -1,18 +1,12 @@
-import { auth } from "~/server/better-auth";
-import { headers } from "next/headers";
 import { api } from "~/trpc/server";
 import { Input } from "~/app/_components/ui/input";
 import { Button } from "~/app/_components/ui/button";
 import { Badge } from "~/app/_components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
+import { Card, CardContent, CardTitle } from "~/app/_components/ui/card";
 import Link from "next/link";
-import { Search, MapPin, DollarSign, Clock, Briefcase } from "lucide-react";
+import { Search, MapPin, Clock, Briefcase } from "lucide-react";
 
 export default async function CandidateJobsPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
   const { jobs } = await api.job.list({ limit: 50 });
 
   return (

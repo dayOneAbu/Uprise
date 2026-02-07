@@ -3,6 +3,7 @@
 import { toast } from "sonner";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -93,7 +94,7 @@ export function EmployerProfileForm() {
                     </div>
                     <h3 className="text-lg font-semibold text-foreground mb-2">Company Not Found</h3>
                     <p className="text-sm text-muted-foreground">
-                        We couldn't find your company profile. Please contact support.
+                        We couldn&apos;t find your company profile. Please contact support.
                     </p>
                 </CardContent>
             </Card>
@@ -105,9 +106,9 @@ export function EmployerProfileForm() {
             id: company.id,
             name: data.name,
             slug: data.slug,
-            website: data.website || undefined,
-            description: data.description || undefined,
-            logoUrl: data.logoUrl || undefined,
+            website: data.website ?? undefined,
+            description: data.description ?? undefined,
+            logoUrl: data.logoUrl ?? undefined,
         });
     }
 
@@ -121,16 +122,18 @@ export function EmployerProfileForm() {
                         Company Profile Preview
                     </CardTitle>
                     <CardDescription>
-                        How your company appears to candidates on MeritMatch
+                        How your company appears to candidates on Uprise
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex items-start gap-4">
                         {form.watch("logoUrl") && (
                             <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                                <img
-                                    src={form.watch("logoUrl")}
-                                    alt={form.watch("name") || "Company logo"}
+                                <Image
+                                    src={form.watch("logoUrl") ?? "/placeholder-logo.png"}
+                                    alt={form.watch("name") ?? "Company logo"}
+                                    width={200}
+                                    height={200}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
                                         e.currentTarget.style.display = 'none';
@@ -143,7 +146,7 @@ export function EmployerProfileForm() {
                                 {form.watch("name") ?? "Company Name"}
                             </h3>
                     <p className="text-muted-foreground mt-1">
-                        meritmatch.com/c/{form.watch("slug") ?? "company-handle"}
+                        uprise.com/c/{form.watch("slug") ?? "company-handle"}
                     </p>
                             {form.watch("website") && (
                                 <p className="text-sm text-primary mt-1">
@@ -200,7 +203,7 @@ export function EmployerProfileForm() {
                                         <FormControl>
                                             <div className="flex">
                                                 <span className="inline-flex items-center px-3 bg-muted border border-r-0 border-input rounded-l-md text-sm text-muted-foreground">
-                                                    meritmatch.com/c/
+                                                    uprise.com/c/
                                                 </span>
                                                 <Input
                                                     placeholder="company-name"
@@ -210,7 +213,7 @@ export function EmployerProfileForm() {
                                             </div>
                                         </FormControl>
                                         <FormDescription>
-                                            This will be your company's unique URL handle
+                                            This will be your company&apos;s unique URL handle
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>
@@ -230,7 +233,7 @@ export function EmployerProfileForm() {
                                             <Input placeholder="https://www.company.com" {...field} />
                                         </FormControl>
                                         <FormDescription>
-                                            Optional: Your company's main website
+                                            Optional: Your company&apos;s main website
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>

@@ -6,13 +6,9 @@ import { useState } from "react";
 import { Button } from "~/app/_components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/app/_components/ui/card";
 import { Badge } from "~/app/_components/ui/badge";
-import { Textarea } from "~/app/_components/ui/textarea";
-import { Separator } from "~/app/_components/ui/separator";
 import {
   ArrowLeft,
   Building,
-  Calendar,
-  Code,
   FileText,
   Send,
   Loader2,
@@ -21,13 +17,13 @@ import {
   Clock
 } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 export default function JobDetailPage() {
   const router = useRouter();
   const params = useParams();
   const jobId = params.id as string;
 
-  const [answer, setAnswer] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: job, isLoading: jobLoading } = api.job.get.useQuery({ id: jobId });
@@ -45,15 +41,9 @@ export default function JobDetailPage() {
   });
 
   const handleApply = () => {
-    if (!answer.trim()) {
-      toast.error("Please provide an answer to the technical challenge");
-      return;
-    }
-
     setIsSubmitting(true);
     applyMutation.mutate({
-      jobId,
-      answerContent: answer
+      jobId
     });
   };
 
@@ -76,7 +66,7 @@ export default function JobDetailPage() {
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <CardTitle>Job Not Found</CardTitle>
             <CardDescription>
-              The job you're looking for doesn't exist or may have been removed.
+              The job you&apos;re looking for doesn&apos;t exist or may have been removed.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -124,9 +114,11 @@ export default function JobDetailPage() {
               <div className="flex items-start gap-4">
                 {job.company?.logoUrl && (
                   <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center overflow-hidden">
-                    <img
+                    <Image
                       src={job.company.logoUrl}
                       alt={job.company.name}
+                      width={64}
+                      height={64}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none';
@@ -139,7 +131,7 @@ export default function JobDetailPage() {
                     {job.company?.name}
                   </h3>
                   <p className="text-muted-foreground mb-3">
-                    meritmatch.com/c/{job.company?.slug}
+                    uprise.com/c/{job.company?.slug}
                   </p>
                   {job.company?.description && (
                     <p className="text-sm text-muted-foreground">
@@ -168,41 +160,64 @@ export default function JobDetailPage() {
             </CardContent>
           </Card>
 
-          {/* AI-Powered Skill Assessment */}
+          {/* Job Requirements */}
           <Card className="border-primary/20 bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-primary">
-                <Code className="h-5 w-5" />
-                Technical Challenge
+                <FileText className="h-5 w-5" />
+                Job Requirements & Skills
               </CardTitle>
               <CardDescription>
-                Complete this AI-graded assessment to demonstrate your skills
+                Skills and experience needed for this internship
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="bg-muted p-4 rounded-lg border">
-                <p className="text-foreground whitespace-pre-wrap leading-relaxed">
-                  {job.testPrompt}
-                </p>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">REQUIRED SKILLS</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {job.skillsRequired?.trim() ? (
+                      job.skillsRequired.split(',').map((skill, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {skill.trim()}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-sm text-muted-foreground">No specific skills listed</span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-2">EXPERIENCE LEVEL</h4>
+                  <Badge variant="outline" className="capitalize">
+                    {job.experienceLevel ?? "Not specified"}
+                  </Badge>
+                </div>
               </div>
 
-              {job.gradingRubric && (
-                <>
-                  <Separator className="my-4" />
-                  <div>
-                    <h4 className="font-medium text-sm text-muted-foreground mb-2">Grading Criteria</h4>
-                    <div className="bg-muted/50 p-3 rounded text-sm text-foreground">
-                      <pre className="whitespace-pre-wrap">{job.gradingRubric}</pre>
-                    </div>
-                  </div>
-                </>
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-1">LOCATION</h4>
+                  <p className="text-sm capitalize">{job.locationType ?? "Not specified"}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-1">DURATION</h4>
+                  <p className="text-sm">{job.duration ? `${job.duration} months` : "Not specified"}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-sm text-muted-foreground mb-1">COMPENSATION</h4>
+                  <p className="text-sm">
+                    {job.isPaid ? (job.salaryRange ?? "Paid") : "Unpaid"}
+                  </p>
+                </div>
+              </div>
 
               <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-start gap-2">
                   <CheckCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-blue-800">
-                    <strong>How it works:</strong> Submit your solution below. Our AI will grade it instantly and employers will see scores without names (blind recruitment).
+                    <strong>AI Matching:</strong> Our AI analyzes your profile, skills, and experience to determine the best internship matches. Apply now to be considered!
                   </div>
                 </div>
               </div>
@@ -235,12 +250,6 @@ export default function JobDetailPage() {
                   </Badge>
                 </div>
 
-                {application.score && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">AI Score</span>
-                    <span className="font-medium">{application.score}%</span>
-                  </div>
-                )}
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Applied</span>
@@ -262,48 +271,51 @@ export default function JobDetailPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Send className="h-5 w-5" />
-                  Apply for this Position
+                  Apply for this Internship
                 </CardTitle>
                 <CardDescription>
-                  Submit your solution to the technical challenge
+                  Express your interest in this internship opportunity
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-2 block">
-                    Your Solution *
-                  </label>
-                  <Textarea
-                    placeholder="Write your code, explain your approach, and demonstrate your solution..."
-                    value={answer}
-                    onChange={(e) => setAnswer(e.target.value)}
-                    className="min-h-[200px] resize-none"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {answer.length}/2000 characters (minimum 50 required)
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-foreground">
+                    <strong>AI Matching:</strong> Your application will be evaluated based on how well your skills,
+                    experience, and profile match the internship requirements. No technical assessment required!
                   </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm">Application Summary</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Job Level:</span>
+                      <p className="font-medium capitalize">{job.experienceLevel ?? "Not specified"}</p>
+                    </div>
+                  </div>
                 </div>
 
                 <Button
                   onClick={handleApply}
-                  disabled={isSubmitting || answer.length < 50}
+                  disabled={isSubmitting}
                   className="w-full gap-2"
+                  size="lg"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Submitting...
+                      Submitting Application...
                     </>
                   ) : (
                     <>
                       <Send className="h-4 w-4" />
-                      Submit Application
+                      Apply Now
                     </>
                   )}
                 </Button>
 
                 <p className="text-xs text-muted-foreground text-center">
-                  Your submission will be graded by AI within seconds
+                  Your profile will be matched against this internship automatically
                 </p>
               </CardContent>
             </Card>

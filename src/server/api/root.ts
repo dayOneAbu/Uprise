@@ -7,6 +7,8 @@ import { applicationRouter } from "~/server/api/routers/application";
 import { contractRouter } from "~/server/api/routers/contract";
 import { reviewRouter } from "~/server/api/routers/review";
 import { aiRouter } from "~/server/api/routers/ai";
+import { challengeRouter } from "~/server/api/routers/challenge";
+import { submissionRouter } from "~/server/api/routers/submission";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -23,6 +25,8 @@ export const appRouter = createTRPCRouter({
   contract: contractRouter,
   review: reviewRouter,
   ai: aiRouter,
+  challenge: challengeRouter,
+  submission: submissionRouter,
 });
 
 // export type definition of API

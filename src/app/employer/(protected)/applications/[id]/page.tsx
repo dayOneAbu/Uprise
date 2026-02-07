@@ -2,29 +2,31 @@
 
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Button } from "~/app/_components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/app/_components/ui/card";
-import { Badge } from "~/app/_components/ui/badge";
-import { Separator } from "~/app/_components/ui/separator";
-import { Textarea } from "~/app/_components/ui/textarea";
-import {
-  ArrowLeft,
-  User,
-  FileText,
-  Code,
-  Calendar,
-  CheckCircle,
-  X,
-  Clock,
-  AlertCircle,
-  Loader2,
-  MessageSquare,
-  Star
-} from "lucide-react";
-import { toast } from "sonner";
 
 export default function ApplicationReviewPage() {
+    // Unwrapping params is now async in simpler text, but specialized hook is not yet standard in 15? 
+    // In strict Next.js 15, params is a promise.
+    // However, since we are "use client", we might receive it already resolved IF we were a server component passing it down?
+    // Wait, "use client" components receive params as a Promise? No, usually server components do.
+    // Actually, let's keep it safe. We can use `use` from React if we want, or just wait.
+    // BUT simpler pattern for client components in App Router:
+    // It's often better to make the PAGE a server component that fetches data or passes ID to a client component.
+    // Let's stick to the pattern I used in jobs/[id] which was a server component.
+    // AH, I made `jobs/[id]` a server component.
+    // Here I need interactivity (approve/reject), so I need a client component.
+    // Plan: Page is Server Component -> fetches ID -> renders Client Component wrapper.
+    // For simplicity/speed in prototype, I'll make the page a Client Component 
+    // and rely on TRPC to fetch.
+    // "use client" page params: In Next.js 15 they are promises. 
+    // I will use `React.use()` or `await` in a wrapper? 
+    // Easier: Just use `useParams()` from `next/navigation`.
+    
+    // REVISING APPROACH:
+    // I will use `useParams` hook standard for client components.
+    
+    // WAIT: `params` prop is NOT available in `useParams`?
+    // `useParams` returns the params object.
+    
     return <ApplicationReviewClient />;
 }
 
@@ -34,58 +36,22 @@ function ApplicationReviewClient() {
     const params = useParams();
     const id = params.id as string;
     const router = useRouter();
-    const [feedback, setFeedback] = useState("");
 
     const { data: application, isLoading, error } = api.application.get.useQuery({ id });
     const updateStatus = api.application.updateStatus.useMutation({
         onSuccess: () => {
-            toast.success("Application status updated successfully!");
-        },
-        onError: (error) => {
-            toast.error(`Failed to update status: ${error.message}`);
+            router.refresh(); // Refresh server data
+            // router.push("/employer/jobs/" + application?.jobId); // Optional: go back
         }
     });
     const createContract = api.contract.create.useMutation({
         onSuccess: () => {
-            toast.success("Contract created successfully!");
             router.push("/employer/contracts");
-        },
-        onError: (error) => {
-            toast.error(`Failed to create contract: ${error.message}`);
         }
     });
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">Loading application...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error || !application) {
-        return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <Card className="max-w-md">
-                    <CardHeader className="text-center">
-                        <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-                        <CardTitle>Application Not Found</CardTitle>
-                        <CardDescription>
-                            The application you're looking for doesn't exist or you don't have permission to view it.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button onClick={() => router.back()}>
-                            Go Back
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-        );
-    }
+    if (isLoading) return <div className="p-8">Loading application...</div>;
+    if (error || !application) return <div className="p-8 text-red-500">Error loading application or not found.</div>;
 
     const handleStatusChange = (newStatus: "INTERVIEW" | "OFFER" | "REJECTED" | "ACCEPTED" | "SUBMITTED" | "REVIEWING") => {
         updateStatus.mutate({ id: application.id, status: newStatus });
@@ -95,282 +61,97 @@ function ApplicationReviewClient() {
        createContract.mutate({ applicationId: application.id });
     };
 
-    const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
-        switch (status) {
-            case "ACCEPTED": return "default";
-            case "REJECTED": return "destructive";
-            case "REVIEWING": return "secondary";
-            default: return "outline";
-        }
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case "ACCEPTED": return <CheckCircle className="h-3 w-3" />;
-            case "REJECTED": return <X className="h-3 w-3" />;
-            default: return <Clock className="h-3 w-3" />;
-        }
-    };
-
     return (
-        <div className="max-w-6xl mx-auto space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
+        <div className="mx-auto max-w-4xl p-6">
+            <button onClick={() => router.back()} className="mb-4 text-sm text-gray-500 hover:underline">&larr; Back</button>
+            
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+                <div className="border-b p-6 flex justify-between items-start">
                     <div>
-                        <h1 className="text-4xl font-bold tracking-tight text-foreground">
-                            Application Review
-                        </h1>
-                        <p className="text-muted-foreground mt-1">
-                            Review and manage candidate application
-                        </p>
+                        <h1 className="text-2xl font-bold mb-1">Application for {application.job.title}</h1>
+                        <div className="text-gray-600">Candidate: <span className="font-semibold text-gray-900">{application.candidate.name ?? "Hidden Name"}</span></div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                         <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
+                            application.status === 'ACCEPTED' ? 'bg-green-100 text-green-800 border-green-300' :
+                            application.status === 'REJECTED' ? 'bg-red-100 text-red-800 border-red-300' :
+                            'bg-blue-100 text-blue-800 border-blue-300'
+                        }`}>
+                            {application.status}
+                        </span>
+                        <div className="text-xs text-gray-400">Applied {application.createdAt.toLocaleDateString()}</div>
                     </div>
                 </div>
-                <Badge variant={getStatusVariant(application.status)} className="text-sm gap-1">
-                    {getStatusIcon(application.status)}
-                    {application.status}
-                </Badge>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Content */}
-                <div className="lg:col-span-2 space-y-6">
-                    {/* Candidate Overview */}
-                    <Card className="border-border/50">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <User className="h-5 w-5" />
-                                Candidate Overview
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-start gap-4">
-                                <div className="h-16 w-16 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xl">
-                                    {application.candidate?.name ? application.candidate.name.split(' ').map(n => n[0]).join('') : "??"}
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-xl font-semibold text-foreground">
-                                        {application.candidate?.name ?? "Unknown Candidate"}
-                                    </h3>
-                                    <p className="text-muted-foreground">
-                                        {application.candidate?.email ?? ""}
-                                    </p>
-                                    <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                                        <span>Applied {new Date(application.createdAt).toLocaleDateString()}</span>
-                                        {application.score !== null && (
-                                            <div className="flex items-center gap-1">
-                                                <Star className="h-3 w-3" />
-                                                <span>Score: {application.score}%</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                <div className="p-6 grid gap-8">
+                    {/* Answer Section */}
+                    <section>
+                        <h3 className="text-lg font-semibold mb-3 border-b pb-2">Candidate&apos;s Answer</h3>
+                        <div className="bg-gray-50 p-4 rounded text-gray-800 whitespace-pre-wrap">
+                            {application.answerContent}
+                        </div>
+                    </section>
 
-                    {/* Job Context */}
-                    <Card className="border-border/50">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <FileText className="h-5 w-5" />
-                                Job Position
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <h3 className="text-lg font-semibold text-foreground mb-2">
-                                {application.job?.title ?? "Unknown Position"}
-                            </h3>
-                            <p className="text-muted-foreground mb-4">
-                                {application.job?.company?.name ?? "Unknown Company"}
-                            </p>
-                            {application.job?.description && (
-                                <div>
-                                    <h4 className="font-medium text-sm text-muted-foreground mb-2">JOB DESCRIPTION</h4>
-                                    <p className="text-sm text-foreground line-clamp-3">
-                                        {application.job.description}
-                                    </p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                     {/* Profile Snapshot */}
+                     {application.candidate.profile && (
+                        <section>
+                            <h3 className="text-lg font-semibold mb-3 border-b pb-2">Candidate Profile</h3>
+                             <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div><span className="font-medium">Skills:</span> {application.candidate.profile.skills}</div>
+                                <div><span className="font-medium">Location:</span> {application.candidate.profile.location}</div>
+                                <div><span className="font-medium">Portfolio:</span> <a href={application.candidate.profile.portfolioUrl ?? '#'} target="_blank" className="text-blue-600 underline">Link</a></div>
+                                <div><span className="font-medium">Success Rate:</span> {application.candidate.successRate}%</div>
+                             </div>
+                        </section>
+                     )}
 
-                    {/* Candidate Answer */}
-                    <Card className="border-border/50">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Code className="h-5 w-5" />
-                                Technical Challenge Response
-                            </CardTitle>
-                            <CardDescription>
-                                Candidate's solution to the AI-powered skill assessment
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="bg-muted p-4 rounded-lg">
-                                <pre className="whitespace-pre-wrap text-sm text-foreground leading-relaxed">
-                                    {application.answerContent}
-                                </pre>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Candidate Profile */}
-                    {application.candidate?.profile && (
-                        <Card className="border-border/50">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <User className="h-5 w-5" />
-                                    Candidate Profile
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    {application.candidate.profile.skills && (
-                                        <div>
-                                            <span className="font-medium text-muted-foreground">Skills:</span>
-                                            <p className="text-foreground mt-1">{application.candidate.profile.skills}</p>
-                                        </div>
-                                    )}
-                                    {application.candidate.profile.location && (
-                                        <div>
-                                            <span className="font-medium text-muted-foreground">Location:</span>
-                                            <p className="text-foreground mt-1">{application.candidate.profile.location}</p>
-                                        </div>
-                                    )}
-                                    {application.candidate.profile.portfolioUrl && (
-                                        <div>
-                                            <span className="font-medium text-muted-foreground">Portfolio:</span>
-                                            <p className="text-foreground mt-1">
-                                                <a
-                                                    href={application.candidate.profile.portfolioUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-primary hover:underline"
-                                                >
-                                                    View Portfolio →
-                                                </a>
-                                            </p>
-                                        </div>
-                                    )}
-                                    <div>
-                                        <span className="font-medium text-muted-foreground">Success Rate:</span>
-                                        <p className="text-foreground mt-1">{application.candidate.successRate}%</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-
-                {/* Sidebar */}
-                <div className="space-y-6">
-                    {/* Quick Actions */}
-                    <Card className="border-border/50">
-                        <CardHeader>
-                            <CardTitle className="text-lg">Actions</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
+                     {/* Actions */}
+                     <section className="bg-gray-100 p-6 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-4">Actions</h3>
+                        <div className="flex flex-wrap gap-3">
+                            {/* Status Buttons */}
                             {application.status !== 'REJECTED' && (
-                                <Button
+                                <button 
                                     onClick={() => handleStatusChange("REJECTED")}
                                     disabled={updateStatus.isPending}
-                                    variant="outline"
-                                    className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+                                    className="px-4 py-2 bg-white border border-red-200 text-red-600 rounded hover:bg-red-50"
                                 >
-                                    <X className="h-4 w-4" />
-                                    Reject Application
-                                </Button>
+                                    Reject
+                                </button>
                             )}
-                            {application.status !== 'INTERVIEW' && application.status !== 'ACCEPTED' && (
-                                <Button
+                             {application.status !== 'INTERVIEW' && application.status !== 'ACCEPTED' && (
+                                <button 
                                     onClick={() => handleStatusChange("INTERVIEW")}
                                     disabled={updateStatus.isPending}
-                                    variant="outline"
-                                    className="w-full justify-start gap-2"
+                                    className="px-4 py-2 bg-white border border-blue-200 text-blue-600 rounded hover:bg-blue-50"
                                 >
-                                    <Calendar className="h-4 w-4" />
-                                    Schedule Interview
-                                </Button>
+                                    Mark for Interview
+                                </button>
                             )}
-                            {application.status !== 'ACCEPTED' && (
-                                <Button
+                            
+                            {/* Make Offer / Accept */}
+                             {application.status !== 'ACCEPTED' && (
+                                <button 
                                     onClick={() => handleStatusChange("ACCEPTED")}
                                     disabled={updateStatus.isPending}
-                                    className="w-full justify-start gap-2"
+                                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                                 >
-                                    <CheckCircle className="h-4 w-4" />
-                                    Accept Application
-                                </Button>
+                                    Accept / Offer
+                                </button>
                             )}
+
+                             {/* Create Contract (Only if accepted) */}
                             {application.status === 'ACCEPTED' && (
-                                <Button
+                                <button 
                                     onClick={handleCreateContract}
                                     disabled={createContract.isPending}
-                                    className="w-full justify-start gap-2"
+                                    className="ml-auto px-6 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 font-medium"
                                 >
-                                    {createContract.isPending ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <FileText className="h-4 w-4" />
-                                    )}
                                     Create Contract
-                                </Button>
+                                </button>
                             )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Feedback */}
-                    {application.status === 'REJECTED' && (
-                        <Card className="border-border/50">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <MessageSquare className="h-5 w-5" />
-                                    Feedback
-                                </CardTitle>
-                                <CardDescription>
-                                    Optional feedback for the candidate
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Textarea
-                                    placeholder="Share constructive feedback to help the candidate improve..."
-                                    value={feedback}
-                                    onChange={(e) => setFeedback(e.target.value)}
-                                    className="min-h-[100px]"
-                                />
-                                <Button className="w-full mt-3" variant="outline">
-                                    Send Feedback
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    )}
-
-                    {/* Application Stats */}
-                    <Card className="border-border/50">
-                        <CardHeader>
-                            <CardTitle className="text-lg">Application Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Applied</span>
-                                <span className="text-foreground">{new Date(application.createdAt).toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Last Updated</span>
-                                <span className="text-foreground">{new Date(application.updatedAt).toLocaleDateString()}</span>
-                            </div>
-                            {application.score !== null && (
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">AI Score</span>
-                                    <span className="text-foreground font-medium">{application.score}%</span>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                        </div>
+                     </section>
                 </div>
             </div>
         </div>

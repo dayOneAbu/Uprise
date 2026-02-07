@@ -10,7 +10,7 @@ import { jobSchema, updateJobSchema, listJobsSchema, byIdSchema } from "~/lib/sc
 
 export const jobRouter = createTRPCRouter({
     // --------------------------------------------------------------------------
-    // CREATE JOB (Protected - Employer Only)
+    // CREATE JOB WITH CHALLENGE (Protected - Employer Only)
     // --------------------------------------------------------------------------
     create: protectedProcedure
         .input(jobSchema)
@@ -30,21 +30,56 @@ export const jobRouter = createTRPCRouter({
                 throw new TRPCError({ code: "FORBIDDEN", message: "You are not a member of this company" });
             }
 
-            return ctx.db.job.create({
-                data: {
-                    title: input.title,
-                    description: input.description,
-                    testPrompt: input.testPrompt,
-                    gradingRubric: input.gradingRubric,
-                    status: "OPEN",
-                    companyId: input.companyId,
-                    employerId: ctx.session.user.id,
-                },
+            // 3. Create job and challenge in transaction
+            const result = await ctx.db.$transaction(async (tx) => {
+                // Create the job
+                const job = await tx.job.create({
+                    data: {
+                        title: input.title,
+                        description: input.description,
+                        locationType: input.locationType,
+                        duration: input.duration,
+                        isPaid: input.isPaid,
+                        salaryRange: input.salaryRange,
+                        skillsRequired: input.skillsRequired,
+                        experienceLevel: input.experienceLevel,
+                        status: "OPEN",
+                        companyId: input.companyId,
+                        employerId: ctx.session.user.id,
+                    },
+                });
+
+                // Create challenge if provided
+                let challenge = null;
+                if (input.challengeTitle && input.challengeType && input.challengeTasks && input.challengeTasks.length > 0) {
+                    challenge = await tx.challenge.create({
+                        data: {
+                            title: input.challengeTitle,
+                            description: input.challengeDescription ?? `Complete this challenge to apply for ${input.title}`,
+                            type: input.challengeType,
+                            employerId: ctx.session.user.id,
+                            jobId: job.id,
+                            timeLimit: input.challengeTimeLimit,
+                            isPublished: true,
+                            tasks: {
+                                create: input.challengeTasks.map((task, index) => ({
+                                    title: task.title,
+                                    description: task.description,
+                                    order: index,
+                                })),
+                            },
+                        },
+                    });
+                }
+
+                return { job, challenge };
             });
+
+            return result;
         }),
 
     // --------------------------------------------------------------------------
-    // GET JOB (Public)
+    // GET JOB (Public - includes challenge)
     // --------------------------------------------------------------------------
     get: publicProcedure
         .input(byIdSchema)
@@ -52,8 +87,15 @@ export const jobRouter = createTRPCRouter({
             const job = await ctx.db.job.findUnique({
                 where: { id: input.id },
                 include: {
-                    company: { select: { name: true, logoUrl: true, slug: true } },
+                    company: { select: { name: true, logoUrl: true, slug: true, description: true } },
                     _count: { select: { applications: true } },
+                    challenges: {
+                        where: { isPublished: true },
+                        include: {
+                            tasks: { orderBy: { order: 'asc' } },
+                            _count: { select: { submissions: true } },
+                        },
+                    },
                 },
             });
 
@@ -117,8 +159,6 @@ export const jobRouter = createTRPCRouter({
                 data: {
                     title: input.title,
                     description: input.description,
-                    testPrompt: input.testPrompt,
-                    gradingRubric: input.gradingRubric,
                 }
             });
         }),

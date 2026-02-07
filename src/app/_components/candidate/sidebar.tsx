@@ -5,9 +5,10 @@ import {
   LayoutDashboard,
   Briefcase,
   FileText,
-  User,
+  Target,
   Settings,
   HelpCircle,
+  LogOut,
   ChevronDown,
   ChevronsRight,
   type LucideIcon,
@@ -15,9 +16,15 @@ import {
 import { cn } from "~/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { authClient } from "~/lib/auth-client";
 
 export const CandidateSidebar = () => {
   const [open, setOpen] = useState(true);
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    window.location.href = "/";
+  };
 
   return (
     <nav
@@ -44,6 +51,7 @@ export const CandidateSidebar = () => {
           href="/candidate/jobs"
           activePath="/candidate/jobs"
           open={open}
+          notifs={3}
         />
         <Option
           Icon={FileText}
@@ -51,13 +59,15 @@ export const CandidateSidebar = () => {
           href="/candidate/applications"
           activePath="/candidate/applications"
           open={open}
+          notifs={1}
         />
         <Option
-          Icon={User}
-          title="Profile"
-          href="/candidate/profile"
-          activePath="/candidate/profile"
+          Icon={Target}
+          title="Skill Sprints"
+          href="/candidate/challenges"
+          activePath="/candidate/challenges"
           open={open}
+          notifs={2}
         />
       </div>
 
@@ -80,6 +90,22 @@ export const CandidateSidebar = () => {
             activePath="/candidate/support"
             open={open}
           />
+          <button
+            onClick={handleLogout}
+            className={cn(
+              "relative flex h-11 w-full items-center rounded-md transition-all duration-200",
+              "text-sidebar-foreground/80 hover:bg-destructive/10 hover:text-destructive"
+            )}
+          >
+            <div className="grid h-full w-12 place-content-center">
+              <LogOut className="h-4 w-4" />
+            </div>
+            {open && (
+              <span className="text-sm font-medium transition-opacity duration-200 opacity-100">
+                Log Out
+              </span>
+            )}
+          </button>
         </div>
       )}
 
@@ -152,7 +178,7 @@ const TitleSection = ({ open }: { open: boolean }) => {
               <div className="flex items-center gap-2">
                 <div>
                   <span className="block text-sm font-semibold text-sidebar-foreground">
-                    MeritMatch
+                    Uprise
                   </span>
                   <span className="block text-xs text-sidebar-foreground/70">
                     Candidate
@@ -171,7 +197,7 @@ const TitleSection = ({ open }: { open: boolean }) => {
 const Logo = () => {
   return (
     <div className="grid size-10 shrink-0 place-content-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-      <div className="font-bold text-xl">M</div>
+      <div className="font-bold text-xl">U</div>
     </div>
   );
 };

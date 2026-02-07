@@ -22,7 +22,9 @@ import {
   Plus,
   Sparkles,
   Activity,
-  Award
+  Award,
+  Zap,
+  Target
 } from "lucide-react";
 
 // Simple date formatting helper
@@ -63,11 +65,12 @@ export default async function CandidateDashboard() {
   }
 
   // Fetch real data
-  const [applications, contracts, jobsResult, jssData] = await Promise.all([
+  const [applications, contracts, aiMatchedJobs, jssData, challenges] = await Promise.all([
     api.application.listMyApplications(),
     api.contract.listMyContracts(),
-    api.job.list({ limit: 6 }),
+    api.ai.getMatchedJobs({ candidateId: session.user.id, limit: 6, aiProvider: 'openai' }),
     api.user.getJSS({ userId: session.user.id }),
+    api.challenge.list(),
   ]);
 
   const submittedApplications = applications.filter(app => app.status === "SUBMITTED");
@@ -116,7 +119,7 @@ export default async function CandidateDashboard() {
   ];
 
   const recentApplications = applications.slice(0, 5);
-  const recommendedJobs = jobsResult.jobs.slice(0, 3);
+  const recommendedJobs = aiMatchedJobs.slice(0, 3);
 
   return (
     <div className="space-y-8">
@@ -259,11 +262,6 @@ export default async function CandidateDashboard() {
                             <Badge variant={getStatusBadgeVariant(application.status)} className="text-xs">
                               {application.status}
                             </Badge>
-                            {application.score !== null && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                                {application.score}% score
-                              </span>
-                            )}
                           </div>
                           <p className="text-sm text-muted-foreground mt-0.5">
                             {application.job?.company?.name ?? "Unknown Company"}
@@ -365,6 +363,50 @@ export default async function CandidateDashboard() {
             </CardContent>
           </Card>
 
+          {/* Recommended Challenges */}
+          {challenges.length > 0 && (
+            <>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-foreground">🚀 Skill Unlocks</h2>
+                <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px]">
+                  Boost Match %
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 mb-3">
+                Verify these skills to unlock higher-paying matches
+              </p>
+              <div className="space-y-3">
+                {challenges.slice(0, 2).map((challenge) => (
+                  <Link key={challenge.id} href={`/candidate/challenges/${challenge.id}`}>
+                    <Card className="border-primary/20 bg-primary/[0.03] hover:bg-primary/[0.06] transition-all cursor-pointer group relative overflow-hidden">
+                      <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                         <Zap className="h-12 w-12 text-primary" />
+                      </div>
+                      <CardContent className="p-4 relative">
+                        <div className="flex items-start gap-4">
+                           <div className="p-2 bg-primary/10 text-primary rounded-lg">
+                              <Target className="h-5 w-5" />
+                           </div>
+                           <div className="flex-1">
+                              <h3 className="font-bold text-foreground text-sm">
+                                {challenge.title}
+                              </h3>
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                Unlock <span className="text-primary font-medium">3 new React matched jobs</span>
+                              </p>
+                              <div className="flex items-center gap-2 mt-3 text-[10px] uppercase font-bold tracking-wider text-primary">
+                                 Start Challenge <ArrowRight className="h-3 w-3" />
+                              </div>
+                           </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
+
           {/* Recommended Jobs */}
           {recommendedJobs.length > 0 && (
             <>
@@ -375,26 +417,52 @@ export default async function CandidateDashboard() {
                 </p>
               </div>
               <div className="space-y-3">
-                {recommendedJobs.map((job) => (
-                  <Link key={job.id} href={`/candidate/jobs/${job.id}`}>
-                    <Card className="border-border/50 hover:border-border transition-all cursor-pointer group">
+                {recommendedJobs.map((match) => (
+                  <Link key={match.job.id} href={`/candidate/jobs/${match.job.id}`}>
+                    <Card className="border-border/50 hover:border-primary/50 transition-all cursor-pointer group">
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start mb-2">
-                          <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                            <Briefcase className="h-5 w-5 text-muted-foreground" />
+                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                            <Sparkles className="h-5 w-5 text-primary" />
                           </div>
-                          <Badge variant="outline" className="text-xs">
-                            Open
-                          </Badge>
+                          <div className="flex items-center gap-1">
+                            <Badge variant="outline" className="text-xs bg-primary/5">
+                              {match.matchScore}% match
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {match.job.locationType ?? "Remote"}
+                            </Badge>
+                          </div>
                         </div>
+
                         <h3 className="font-bold text-foreground group-hover:text-primary transition-colors mb-1">
-                          {job.title}
+                          {match.job.title}
                         </h3>
+
                         <p className="text-sm text-muted-foreground mb-2">
-                          {job.company?.name ?? "Unknown Company"}
+                          {match.job.company?.name ?? "Unknown Company"}
                         </p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>Skill Sprint</span>
+
+                        {/* Match reasoning preview */}
+                        <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                          {match.reasoning}
+                        </p>
+
+                        {/* Key strengths */}
+                        {match.strengths && Array.isArray(match.strengths) && match.strengths.length > 0 && (
+                          <div className="flex gap-1 mb-2">
+                            {match.strengths.slice(0, 1).map((strength: string, idx: number) => (
+                              <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
+                                ✓ {strength}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>{match.job.duration ? `${match.job.duration} months` : "Flexible duration"}</span>
+                          <span>{match.job.isPaid ? "Paid" : "Unpaid"}</span>
+                          <span className="text-primary">AI: {match.aiProvider}</span>
                         </div>
                       </CardContent>
                     </Card>
@@ -414,7 +482,7 @@ export default async function CandidateDashboard() {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-sm leading-relaxed">
-                Complete your profile to increase your visibility to employers. Add your skills, portfolio, and experience to stand out.
+                Our AI analyzes your profile, skills, and JSS score to find the best internship matches. Keep your profile updated for better matches!
               </CardDescription>
               <Button 
                 size="sm" 

@@ -31,13 +31,13 @@ export const updateUserSchema = z.object({
 
 export const signupSchema = z.object({
     name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email address"),
+    email: z.string().regex(/^[^@]+@[^@]+\.[^@]+$/, "Invalid email address"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     role: z.nativeEnum(UserRole).optional(),
 });
 
 export const loginSchema = z.object({
-    email: z.string().email("Invalid email address"),
+    email: z.string().regex(/^[^@]+@[^@]+\.[^@]+$/, "Invalid email address"),
     password: z.string().min(1, "Password is required"),
 });
 
@@ -88,9 +88,22 @@ export const updateCompanySchema = companySchema.partial().extend({
 export const jobSchema = z.object({
     title: z.string().min(3).max(100),
     description: z.string().min(20),
-    testPrompt: z.string().min(10),
-    gradingRubric: z.string().optional(),
+    locationType: z.enum(["remote", "onsite", "hybrid"]).optional(),
+    duration: z.number().min(1).max(12).optional(), // 1-12 months
+    isPaid: z.boolean().default(false),
+    salaryRange: z.string().optional(),
+    skillsRequired: z.string().optional(),
+    experienceLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
     companyId: z.string(),
+    // Challenge fields (optional - creates challenge with job)
+    challengeTitle: z.string().min(3).optional(),
+    challengeDescription: z.string().min(10).optional(),
+    challengeType: z.enum(["CODE", "DESIGN", "WRITING", "ANALYTICAL", "DEBUGGING"]).optional(),
+    challengeTimeLimit: z.number().min(5).max(180).optional(),
+    challengeTasks: z.array(z.object({
+        title: z.string().min(3),
+        description: z.string().min(10),
+    })).optional(),
 });
 
 export const updateJobSchema = jobSchema.partial().extend({
@@ -107,7 +120,6 @@ export const listJobsSchema = paginationSchema.extend({
 // ============================================================================
 export const applySchema = z.object({
     jobId: z.string(),
-    answerContent: z.string().min(50, "Answer must be at least 50 characters"),
 });
 
 export const updateApplicationStatusSchema = z.object({

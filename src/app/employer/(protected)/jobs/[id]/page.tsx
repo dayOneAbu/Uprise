@@ -4,14 +4,11 @@ import { notFound } from "next/navigation";
 import { Button } from "~/app/_components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/app/_components/ui/card";
 import { Badge } from "~/app/_components/ui/badge";
-import { Separator } from "~/app/_components/ui/separator";
 import {
   ArrowLeft,
   Edit,
-  Eye,
   FileText,
   Users,
-  Calendar,
   Code,
   CheckCircle,
   Clock,
@@ -151,21 +148,24 @@ export default async function JobDetailsPage({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="bg-muted p-4 rounded-lg border">
-                  <p className="text-foreground whitespace-pre-wrap leading-relaxed">
-                    {job.testPrompt}
-                  </p>
-                </div>
-                {job.gradingRubric && (
-                  <>
-                    <Separator className="my-4" />
-                    <div>
-                      <h4 className="font-medium text-sm text-muted-foreground mb-2">Grading Criteria</h4>
-                      <p className="text-sm text-foreground">
-                        {job.gradingRubric}
-                      </p>
-                    </div>
-                  </>
+                {job.challenges && job.challenges.length > 0 && job.challenges[0] && (
+                  <div className="bg-muted/30 p-4 rounded-lg border mb-6">
+                    <h3 className="font-medium mb-2 flex items-center gap-2">
+                      <Code size={16} />
+                      Technical Challenge
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {job.challenges[0].description}
+                    </p>
+                    {job.challenges[0].tasks && job.challenges[0].tasks.length > 0 && job.challenges[0].tasks[0]?.rubric && (
+                      <>
+                        <h4 className="text-sm font-medium mb-1">Grading Rubric</h4>
+                        <p className="text-sm text-muted-foreground bg-background p-2 rounded border">
+                          {job.challenges[0].tasks[0].rubric}
+                        </p>
+                      </>
+                    )}
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -198,7 +198,7 @@ export default async function JobDetailsPage({
                       <div key={app.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
-                            {app.candidate?.name ? (app.candidate.name as string).slice(0, 2).toUpperCase() : "??"}
+                            {app.candidate?.name ? app.candidate.name.slice(0, 2).toUpperCase() : "??"}
                           </div>
                           <div>
                             <p className="text-sm font-medium text-foreground">

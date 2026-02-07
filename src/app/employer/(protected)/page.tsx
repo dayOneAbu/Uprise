@@ -18,9 +18,11 @@ import {
   Plus,
   Sparkles,
   Activity,
-  Users
+  Users,
+  Clock
 } from "lucide-react";
 import { api } from "~/trpc/server";
+import { Badge } from "~/app/_components/ui/badge";
 // Simple date formatting helper
 function formatTimeAgo(date: Date): string {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -46,11 +48,15 @@ export default async function EmployerDashboard() {
 
   // Fetch real data
   const companyId = session.user.companyId;
-  const [jobsResult, contracts] = await Promise.all([
-    companyId 
+  const [jobsResult, contracts, topCandidates, recentSubmissions] = await Promise.all([
+    companyId
       ? api.job.list({ limit: 100, companyId })
       : Promise.resolve({ jobs: [], nextCursor: undefined }),
     api.contract.listMyContracts(),
+    companyId
+      ? api.ai.getTopCandidates({ companyId, limit: 6, aiProvider: 'openai' })
+      : Promise.resolve([]),
+    api.submission.getRecent({ limit: 5 }),
   ]);
 
   const jobs = jobsResult.jobs;
@@ -69,42 +75,41 @@ export default async function EmployerDashboard() {
         return [];
       }
     })
-  ).then(results => results.flat().slice(0, 5));
+  ).then(results => results.flat().sort((a,b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, 5));
 
-  const totalApplications = recentApplications.length;
   const activeContracts = contracts.filter(c => c.status === "ACTIVE");
   const completedContracts = contracts.filter(c => c.status === "COMPLETED");
 
   const stats = [
-    { 
-      label: "Active Jobs", 
-      value: activeJobs.length.toString(), 
+    {
+      label: "Active Jobs",
+      value: activeJobs.length.toString(),
       change: `${activeJobs.length} open positions`,
       icon: Briefcase,
       trend: "neutral" as const,
       description: "Jobs currently accepting applications"
     },
-    { 
-      label: "Total Applications", 
-      value: totalApplications.toString(), 
-      change: "Recent submissions",
-      icon: Users,
+    {
+      label: "Top Candidates",
+      value: topCandidates.length.toString(),
+      change: "AI-matched talent",
+      icon: Sparkles,
       trend: "positive" as const,
-      description: "Applications received this week"
+      description: "High-quality candidates matched to your jobs"
     },
-    { 
-      label: "Active Contracts", 
-      value: activeContracts.length.toString(), 
+    {
+      label: "Active Contracts",
+      value: activeContracts.length.toString(),
       change: `${completedContracts.length} completed`,
       icon: FileText,
       trend: "positive" as const,
       description: "Currently active internships"
     },
-    { 
-      label: "Success Rate", 
-      value: contracts.length > 0 
+    {
+      label: "Success Rate",
+      value: contracts.length > 0
         ? `${Math.round((completedContracts.length / contracts.length) * 100)}%`
-        : "0%", 
+        : "0%",
       change: "Completion rate",
       icon: TrendingUp,
       trend: "positive" as const,
@@ -168,14 +173,152 @@ export default async function EmployerDashboard() {
         ))}
       </div>
 
+      {/* Top Matched Candidates */}
+      {topCandidates.length > 0 && (
+        <>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">🎯 Top Matched Candidates</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              AI-recommended talent for your open positions
+            </p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {topCandidates.map((match) => (
+              <Card key={match.candidate.id} className="border-border/50 hover:border-primary/50 transition-all hover:shadow-md">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">
+                      {match.candidate.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-foreground truncate">
+                          {match.candidate.name}
+                        </h3>
+                        <Badge variant="outline" className="text-xs">
+                          {match.candidate.badge}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        JSS: {match.candidate.successRate}% • AI: {match.aiProvider}
+                      </p>
+
+                      {/* Match Score */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full"
+                            style={{ width: `${match.matchScore}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-foreground">
+                          {match.matchScore}% match
+                        </span>
+                      </div>
+
+                      {/* AI Reasoning */}
+                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                        {match.reasoning}
+                      </p>
+
+                      {/* Key Strengths */}
+                      {(match as any).skillScores && Array.isArray((match as any).skillScores) && (match as any).skillScores.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {(match as any).skillScores.slice(0, 3).map((ss: any, idx: number) => (
+                            <Badge key={idx} variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/5 text-primary border-primary/20">
+                              {(ss as any).skill} • {(ss as any).score}%
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+
+                      <Button size="sm" variant="outline" className="w-full h-7 text-xs">
+                        View Full Profile
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Applications / Activity */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-foreground">Recent Activity</h2>
+              <h2 className="text-2xl font-bold text-foreground">⚡ Live Merit Activity</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Latest applications and updates
+                Real-time challenge completions from your candidates
+              </p>
+            </div>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/employer/challenges" className="gap-1">
+                Manage Challenges
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+
+          <Card className="border-border/50 bg-primary/[0.02]">
+            <CardContent className="p-0">
+              {recentSubmissions.length > 0 ? (
+                <div className="divide-y divide-border">
+                  {recentSubmissions.map((submission) => (
+                    <div
+                      key={submission.id}
+                      className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
+                        {((submission.candidate as any)?.name ?? "C").split(" ").map((n: string) => n[0]).join("")}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-foreground">
+                            Candidate <span className="text-primary font-bold">#{submission.candidate.id.slice(0, 5)}</span>
+                          </p>
+                          <Badge className="bg-green-500/10 text-green-600 border-green-500/20 text-[10px] px-1.5 h-4">
+                            Challenge Complete
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                          Finished <span className="font-semibold">{submission.challenge.title}</span> 
+                          {submission.overallScore !== null && (
+                             <> with a score of <span className="text-primary font-bold">{submission.overallScore}%</span></>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {formatTimeAgo(new Date(submission.createdAt))}
+                        </p>
+                      </div>
+                      <Button variant="ghost" size="sm" className="h-8 text-xs" asChild>
+                         <Link href={`/employer/challenges/${submission.challengeId}/submissions/${submission.id}`}>
+                            Verify Score
+                         </Link>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center">
+                  <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <p className="text-sm font-medium text-foreground mb-1">No recent merit activity</p>
+                  <p className="text-xs text-muted-foreground">
+                    Seeded data should appear here. If not, re-run the seed script.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="flex items-center justify-between pt-4">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">Recent Applications</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Latest job applications
               </p>
             </div>
             <Button variant="ghost" size="sm" asChild>
@@ -197,19 +340,14 @@ export default async function EmployerDashboard() {
                       className="block p-4 hover:bg-muted/50 transition-colors group"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm shrink-0">
-                          {application.candidate?.id?.slice(0, 2).toUpperCase() ?? "??"}
+                        <div className="h-10 w-10 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center font-semibold text-sm shrink-0">
+                           {((application.candidate as any)?.name ?? "C").split(" ").map((n: string) => n[0]).join("")}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                               New application received
                             </p>
-                            {application.score !== null && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                                {application.score}% score
-                              </span>
-                            )}
                           </div>
                           <p className="text-sm text-muted-foreground mt-0.5">
                             For <span className="font-medium">{application.jobTitle}</span>
@@ -226,7 +364,7 @@ export default async function EmployerDashboard() {
               ) : (
                 <div className="p-12 text-center">
                   <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <p className="text-sm font-medium text-foreground mb-1">No recent activity</p>
+                  <p className="text-sm font-medium text-foreground mb-1">No recent applications</p>
                   <p className="text-xs text-muted-foreground">
                     Applications will appear here once candidates start applying
                   </p>

@@ -6,7 +6,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { UserRole } from "../../../../generated/prisma";
 
-import { applySchema, updateApplicationStatusSchema, byJobIdSchema } from "~/lib/schemas";
+import { applySchema, updateApplicationStatusSchema, byJobIdSchema, byIdSchema } from "~/lib/schemas";
 
 // --------------------------------------------------------------------------
 // APPLY TO JOB (Protected - Candidate Only)
@@ -33,69 +33,69 @@ export const applicationRouter = createTRPCRouter({
                 throw new TRPCError({ code: "CONFLICT", message: "Already applied to this job" });
             }
 
-            // Get job details for AI grading
+            // Verify job exists and is still open
             const job = await ctx.db.job.findUnique({
                 where: { id: input.jobId },
-                select: { testPrompt: true, gradingRubric: true }
+                select: { id: true, status: true }
             });
 
             if (!job) {
                 throw new TRPCError({ code: "NOT_FOUND", message: "Job not found" });
             }
 
-            // Create application
+            if (job.status !== "OPEN") {
+                throw new TRPCError({ code: "BAD_REQUEST", message: "This job is no longer accepting applications" });
+            }
+
+            // Create simple application (no technical assessment)
             const application = await ctx.db.application.create({
                 data: {
                     jobId: input.jobId,
                     candidateId: ctx.session.user.id,
-                    answerContent: input.answerContent,
                     status: "SUBMITTED",
                 }
             });
 
-            // Trigger AI grading (async - don't wait for it in response)
-            // In a real app, this would be done via a job queue
-            ctx.db.application.update({
-                where: { id: application.id },
-                data: {
-                    status: "REVIEWING", // AI is processing
+
+            return application;
+        }),
+
+    // --------------------------------------------------------------------------
+    // GET APPLICATION BY ID (Protected)
+    // --------------------------------------------------------------------------
+    getById: protectedProcedure
+        .input(byIdSchema)
+        .query(async ({ ctx, input }) => {
+            const application = await ctx.db.application.findUnique({
+                where: { id: input.id },
+                include: {
+                    job: {
+                        include: {
+                            company: true,
+                        }
+                    },
+                    candidate: true,
                 }
-            }).then(async () => {
-                // Call AI grading
-                try {
-                    await ctx.db.$executeRaw`SELECT 1`; // Keep connection alive
-                    // In a real app: await ai.gradeSubmission(application.id, job.testPrompt, input.answerContent);
-                    // For demo, we'll simulate this with a delay
-                    setTimeout(async () => {
-                        // Mock AI grading result
-                        const mockScore = Math.floor(Math.random() * 40) + 60; // 60-100 range
-                        await ctx.db.application.update({
-                            where: { id: application.id },
-                            data: {
-                                score: mockScore,
-                                status: "REVIEWING", // Ready for employer review
-                                gradedAt: new Date(),
-                                aiAnalysis: JSON.stringify({
-                                    feedback: mockScore > 85 ? "Excellent technical solution with strong problem-solving skills!" :
-                                             mockScore > 70 ? "Good work with solid understanding of the requirements." :
-                                             "Decent attempt, shows basic understanding but needs more depth.",
-                                    strengths: ["Problem understanding", "Code structure"],
-                                    weaknesses: ["Could use more comments", "Edge cases not handled"],
-                                    isPlagiarized: false,
-                                    plagiarismConfidence: 0,
-                                })
-                            }
-                        });
-                    }, 2000); // 2 second delay to simulate AI processing
-                } catch (error) {
-                    console.error("AI grading failed:", error);
-                    // Fallback: mark as submitted without grading
-                    await ctx.db.application.update({
-                        where: { id: application.id },
-                        data: { status: "SUBMITTED" }
-                    });
+            });
+
+            if (!application) {
+                throw new TRPCError({ code: "NOT_FOUND", message: "Application not found" });
+            }
+
+            // Verify ownership (candidate or employer)
+            if (ctx.session.user.role === UserRole.CANDIDATE && application.candidateId !== ctx.session.user.id) {
+                throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized" });
+            }
+
+            if (ctx.session.user.role === UserRole.EMPLOYER) {
+                const job = await ctx.db.job.findUnique({
+                    where: { id: application.jobId },
+                    select: { employerId: true }
+                });
+                if (job?.employerId !== ctx.session.user.id) {
+                    throw new TRPCError({ code: "FORBIDDEN", message: "Not authorized" });
                 }
-            }).catch(console.error);
+            }
 
             return application;
         }),
@@ -126,15 +126,49 @@ export const applicationRouter = createTRPCRouter({
     // --------------------------------------------------------------------------
     listMyApplications: protectedProcedure
         .query(async ({ ctx }) => {
-            return ctx.db.application.findMany({
-                where: { candidateId: ctx.session.user.id },
-                include: {
-                    job: {
-                        include: { company: { select: { name: true } } }
-                    }
-                },
-                orderBy: { createdAt: 'desc' }
-            });
+            if (ctx.session.user.role === UserRole.EMPLOYER) {
+                // For employers, return all applications for their company's jobs
+                const user = await ctx.db.user.findUnique({
+                    where: { id: ctx.session.user.id },
+                    select: { companyId: true }
+                });
+
+                if (!user?.companyId) {
+                    return [];
+                }
+
+                return ctx.db.application.findMany({
+                    where: {
+                        job: { companyId: user.companyId }
+                    },
+                    include: {
+                        job: {
+                            include: { company: { select: { name: true } } }
+                        },
+                        candidate: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                successRate: true,
+                                badge: true,
+                            }
+                        }
+                    },
+                    orderBy: { createdAt: 'desc' }
+                });
+            } else {
+                // For candidates, return their own applications
+                return ctx.db.application.findMany({
+                    where: { candidateId: ctx.session.user.id },
+                    include: {
+                        job: {
+                            include: { company: { select: { name: true } } }
+                        }
+                    },
+                    orderBy: { createdAt: 'desc' }
+                });
+            }
         }),
 
     // --------------------------------------------------------------------------
@@ -169,6 +203,7 @@ export const applicationRouter = createTRPCRouter({
                         select: {
                             id: true,
                             name: true,
+                            email: true,
                             successRate: true,
                             badge: true,
                         }

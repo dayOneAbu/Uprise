@@ -1,8 +1,9 @@
+
 import { api, HydrateClient } from "~/trpc/server";
 import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
 import { Badge } from "~/app/_components/ui/badge";
 import { Button } from "~/app/_components/ui/button";
-import { FileText, Calendar, User, CheckCircle, X, Eye, MoreHorizontal, Loader2 } from "lucide-react";
+import { FileText, Calendar, User, CheckCircle, X, Eye, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -77,7 +78,8 @@ export default async function ContractsPage() {
                           <User className="h-4 w-4" />
                           <span>
                             Intern: <span className="font-medium text-foreground">
-                              {contract.intern?.name ?? "Unknown Intern"}
+                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access */}
+                              {'intern' in contract ? (contract.intern as any)?.name ?? "Unknown Intern" : "Unknown Intern"}
                             </span>
                           </span>
                         </div>
@@ -134,15 +136,16 @@ export default async function ContractsPage() {
                     </div>
                   </div>
                 </CardHeader>
-                {contract.feedback && (
+                {/* Feedback field does not exist on Contract model yet
+                {(contract as any).feedback && (
                   <CardContent>
                     <div className="bg-muted p-3 rounded-md">
                       <p className="text-sm text-foreground italic">
-                        "{contract.feedback}"
+                        &ldquo;{(contract as any).feedback}&rdquo;
                       </p>
                     </div>
                   </CardContent>
-                )}
+                )} */}
               </Card>
             ))}
           </div>

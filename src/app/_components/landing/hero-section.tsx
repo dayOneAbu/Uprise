@@ -2,6 +2,7 @@
 
 import { Button } from "~/app/_components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 
 interface HeroSectionProps {
   session: {
@@ -76,12 +77,12 @@ export function HeroSection({ session }: HeroSectionProps) {
             <div className="absolute -bottom-12 -left-12 h-100 w-100 rounded-full bg-primary/5 blur-3xl" />
             
             {/* Main Image */}
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl rotate-1 hover:rotate-0 transition-transform duration-500">
-                <img 
-                    src="/hero_image.png" 
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl rotate-1 hover:rotate-0 transition-transform duration-500" style={{ aspectRatio: "6/5" }}>
+                <Image
+                    src="/hero_image.png"
                     alt="Intern working deeply"
-                    className="w-full h-auto object-cover" 
-                    style={{ aspectRatio: "6/5" }}
+                    fill
+                    className="object-cover"
                 />
                  {/* Floating Card Element */}
                  <div className="absolute bottom-8 left-8 right-8 bg-card/95 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-border/20">

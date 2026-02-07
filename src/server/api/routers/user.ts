@@ -256,7 +256,75 @@ export const userRouter = createTRPCRouter({
         }),
 
     // --------------------------------------------------------------------------
-    // DELETE ACCOUNT (Protected)
+    // GET TOP CANDIDATES FOR BLIND TALENT POOL (Employer only)
+    // Returns candidates with their skill scores for blind browsing
+    // --------------------------------------------------------------------------
+    getTopCandidates: protectedProcedure
+        .input(z.object({
+            companyId: z.string(),
+            limit: z.number().default(50),
+        }))
+        .query(async ({ ctx, input }) => {
+            // Only employers and admins can browse talent pool
+            if (ctx.session.user.role !== UserRole.EMPLOYER && ctx.session.user.role !== UserRole.ADMIN) {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Only employers can browse talent pool",
+                });
+            }
+
+            // Fetch candidates with completed submissions and skill scores
+            const candidates = await ctx.db.user.findMany({
+                where: {
+                    role: UserRole.CANDIDATE,
+                    submissions: {
+                        some: {
+                            status: "COMPLETED",
+                        },
+                    },
+                },
+                include: {
+                    skillScores: true,
+                    submissions: {
+                        where: {
+                            status: "COMPLETED",
+                        },
+                        select: {
+                            id: true,
+                            overallScore: true,
+                        },
+                    },
+                },
+                take: input.limit,
+                orderBy: {
+                    successRate: "desc",
+                },
+            });
+
+            // Format for blind talent pool
+            const formattedCandidates = candidates.map((c) => {
+                const completedSubmissions = c.submissions.filter(s => s.overallScore !== null);
+                const avgScore = completedSubmissions.length > 0
+                    ? Math.round(completedSubmissions.reduce((sum, s) => sum + (s.overallScore ?? 0), 0) / completedSubmissions.length)
+                    : 0;
+
+                return {
+                    id: c.id,
+                    maskedId: c.id.slice(0, 8), // Use first 8 chars of ID as masked identifier
+                    skillScores: c.skillScores.map(s => ({
+                        id: s.id,
+                        skill: s.skill,
+                        score: s.score,
+                        submissions: s.submissions,
+                    })),
+                    totalSubmissions: c.submissions.length,
+                    completedSubmissions: completedSubmissions.length,
+                    averageScore: avgScore,
+                };
+            });
+
+            return formattedCandidates;
+        }),
     // Soft delete - just mark as inactive (we keep data for audit)
     // --------------------------------------------------------------------------
     deleteAccount: protectedProcedure.mutation(async ({ ctx }) => {
@@ -315,7 +383,7 @@ export const userRouter = createTRPCRouter({
 
     // --------------------------------------------------------------------------
     // CALCULATE JSS (Job Success Score) - Public
-    // Core reputation metric for MeritMatch
+    // Core reputation metric for Uprise
     // --------------------------------------------------------------------------
     getJSS: publicProcedure
         .input(z.object({ userId: z.string() }))
@@ -344,7 +412,7 @@ export const userRouter = createTRPCRouter({
                 }),
                 ctx.db.application.findMany({
                     where: { candidateId: input.userId },
-                    select: { score: true }
+                    select: { id: true } // Just count applications, no score field
                 }),
                 ctx.db.review.findMany({
                     where: { revieweeId: input.userId },
@@ -353,7 +421,7 @@ export const userRouter = createTRPCRouter({
             ]);
 
             // JSS Calculation (Job Success Score)
-            // Based on: Completion Rate, Average Rating, AI Scores, Experience
+            // Based on: Completion Rate, Average Rating, Engagement Score
 
             // 1. Completion Rate (40% weight)
             const completedContracts = contracts.filter(c => c.status === "COMPLETED").length;
@@ -372,18 +440,19 @@ export const userRouter = createTRPCRouter({
                 ? privateReviews.reduce((sum, r) => sum + r.rating, 0) / privateReviews.length
                 : 0;
 
-            // 4. AI Sprint Scores (10% weight)
-            const validScores = applications.filter(a => a.score !== null).map(a => a.score!);
-            const avgAiScore = validScores.length > 0
-                ? validScores.reduce((sum, score) => sum + score, 0) / validScores.length
-                : 0;
+            // 4. Engagement Score (10% weight) - based on application activity
+            const totalApplications = applications.length;
+            const engagementScore = Math.min(totalApplications * 2, 100); // Max 100 points, 2 points per application
+
+            // 5. AI Score - placeholder for future AI grading integration
+            const avgAiScore = 0;
 
             // Calculate JSS
             const jss = Math.round(
                 completionRate * 0.4 +           // 40%
                 (avgPublicRating / 5) * 30 +     // 30% (normalized to 0-30)
                 (avgPrivateScore / 5) * 20 +     // 20% (normalized to 0-20)
-                (avgAiScore / 100) * 10          // 10% (normalized to 0-10)
+                (engagementScore / 100) * 10     // 10% (normalized to 0-10)
             );
 
             // Determine badge level

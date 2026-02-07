@@ -17,7 +17,7 @@ export function FeatureSection() {
               <span className="text-primary">verified talent</span>
             </h2>
             <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
-              Access the top 1% of interns on MeritMatch. We verify skills,
+              Access the top 1% of interns on Uprise. We verify skills,
               track academic performance, and ensure readiness for real-world projects.
             </p>
 

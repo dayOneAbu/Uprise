@@ -14,7 +14,7 @@ const Button = React.forwardRef<
     variant?: "default" | "outline" | "ghost";
     size?: "default" | "sm" | "lg";
   }
->(({ className, variant = "default", size = "default", ...props }, ref) => {
+>(({ className, variant: _variant = "default", size = "default", ...props }, ref) => {
   return (
     <button
       className={cn(
