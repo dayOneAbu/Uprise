@@ -145,7 +145,7 @@ async function main() {
     data: {
       id: 'demo_employer',
       name: 'Sarah Johnson',
-      email: 'employer@meritmatch.demo',
+      email: 'employer@UPrise.demo',
       emailVerified: true,
       role: UserRole.EMPLOYER,
       successRate: 95,
@@ -174,14 +174,14 @@ async function main() {
     data: { companyId: demoCompany.id }
   })
 
-  console.log('✅ Demo Employer: employer@meritmatch.demo')
+  console.log('✅ Demo Employer: employer@UPrise.demo')
 
   // Demo Candidate with skill scores
   const demoCandidate = await prisma.user.create({
     data: {
       id: 'demo_candidate',
       name: 'Alex Rivera',
-      email: 'candidate@meritmatch.demo',
+      email: 'candidate@UPrise.demo',
       emailVerified: true,
       role: UserRole.CANDIDATE,
       successRate: 88,
@@ -234,7 +234,7 @@ async function main() {
     }
   })
 
-  console.log('✅ Demo Candidate: candidate@meritmatch.demo')
+  console.log('✅ Demo Candidate: candidate@UPrise.demo')
   console.log('   Password: Set via Better Auth (magic link or configured)')
 
   // Add demo users to array for password setup
@@ -706,9 +706,9 @@ async function main() {
   console.log('- 150 Applications')
   console.log('- 40 Contracts with reviews')
   console.log('\n👤 Demo Accounts (for showcase):')
-  console.log('  • Employer: employer@meritmatch.demo / 123456789')
+  console.log('  • Employer: employer@UPrise.demo / 123456789')
   console.log('    Company: TechCorp Solutions')
-  console.log('  • Candidate: candidate@meritmatch.demo / 123456789')
+  console.log('  • Candidate: candidate@UPrise.demo / 123456789')
   console.log('    Skills: React (92%), JavaScript (88%), TypeScript (90%), Node.js (85%)')
   console.log('\n🔑 All accounts use password: 123456789')
   console.log('🚀 Ready for demo!')

@@ -36,7 +36,7 @@ export default function OnboardingPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-6">
       <div className="max-w-3xl w-full text-center space-y-8">
         <div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900">Welcome to MeritMatch!</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900">Welcome to UPrise!</h1>
             <p className="text-xl text-gray-600 mt-2">To get started, please tell us how you want to use the platform.</p>
         </div>
 

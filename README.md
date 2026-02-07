@@ -1,4 +1,4 @@
-# MeritMatch AI
+# UPrise
 
 **The Reputation-First Internship Platform for the African Tech Ecosystem.**
 
@@ -6,7 +6,7 @@
 
 In Africa, the "Trust Gap" is the biggest hurdle to employment. Thousands of brilliant students from rural or less-known universities are ignored because HR managers rely on "prestige" rather than "proof."
 
-**MeritMatch AI** levels the playing field. Using an Upwork-inspired Reputation Engine and AI-powered vetting, we replace biased CV-screening with **verifiable merit.**
+**UPrise** levels the playing field. Using an Upwork-inspired Reputation Engine and AI-powered vetting, we replace biased CV-screening with **verifiable merit.**
 
 ## 🛠️ The Tech Stack
 
