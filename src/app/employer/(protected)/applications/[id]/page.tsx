@@ -1,36 +1,14 @@
 "use client";
 
 import { api } from "~/trpc/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 export default function ApplicationReviewPage() {
-    // Unwrapping params is now async in simpler text, but specialized hook is not yet standard in 15? 
-    // In strict Next.js 15, params is a promise.
-    // However, since we are "use client", we might receive it already resolved IF we were a server component passing it down?
-    // Wait, "use client" components receive params as a Promise? No, usually server components do.
-    // Actually, let's keep it safe. We can use `use` from React if we want, or just wait.
-    // BUT simpler pattern for client components in App Router:
-    // It's often better to make the PAGE a server component that fetches data or passes ID to a client component.
-    // Let's stick to the pattern I used in jobs/[id] which was a server component.
-    // AH, I made `jobs/[id]` a server component.
-    // Here I need interactivity (approve/reject), so I need a client component.
-    // Plan: Page is Server Component -> fetches ID -> renders Client Component wrapper.
-    // For simplicity/speed in prototype, I'll make the page a Client Component 
-    // and rely on TRPC to fetch.
-    // "use client" page params: In Next.js 15 they are promises. 
-    // I will use `React.use()` or `await` in a wrapper? 
-    // Easier: Just use `useParams()` from `next/navigation`.
     
-    // REVISING APPROACH:
-    // I will use `useParams` hook standard for client components.
-    
-    // WAIT: `params` prop is NOT available in `useParams`?
-    // `useParams` returns the params object.
     
     return <ApplicationReviewClient />;
 }
 
-import { useParams } from "next/navigation";
 
 function ApplicationReviewClient() {
     const params = useParams();
@@ -84,7 +62,6 @@ function ApplicationReviewClient() {
                 </div>
 
                 <div className="p-6 grid gap-8">
-
                      {/* Profile Snapshot */}
                      {application.candidate.profile && (
                         <section>

@@ -1,21 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-assignment */
-import { env } from "~/env";
+import "dotenv/config";
 import { PrismaClient } from "~/generated/prisma";
 import { PrismaNeon } from "@prisma/adapter-neon";
-import { Pool, neonConfig } from "@neondatabase/serverless";
-import ws from "ws";
+import { env } from "~/env";
 
 const createPrismaClient = () => {
-  if (env.DATABASE_URL.startsWith("postgresql")) {
-    neonConfig.webSocketConstructor = ws;
-    const pool = new Pool({ connectionString: env.DATABASE_URL });
-    const adapter = new PrismaNeon(pool as any);
-    return new PrismaClient({
-      adapter,
-      log: env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-    });
+  const connectionString = process.env.DATABASE_URL ?? env.DATABASE_URL;
+
+  if (!connectionString) {
+    throw new Error("❌ DATABASE_URL is missing!");
   }
+
+  // Official Neon Recommended Setup
+  const adapter = new PrismaNeon({ connectionString });
+
   return new PrismaClient({
+    adapter,
     log: env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
   });
 };

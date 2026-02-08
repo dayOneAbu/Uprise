@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import { toast } from "sonner";
 import { Button } from "~/app/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
 import { Input } from "~/app/_components/ui/input";
@@ -41,7 +42,7 @@ export function ChallengeCreateForm() {
       router.push(`/employer/challenges/${data.id}`);
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error(error.message);
       setIsSubmitting(false);
     },
   });
@@ -69,12 +70,12 @@ export function ChallengeCreateForm() {
     e.preventDefault();
     
     if (!title.trim() || !description.trim()) {
-      alert("Please fill in all required fields");
+      toast.error("Please fill in all required fields");
       return;
     }
 
     if (tasks.some(t => !t.title.trim() || !t.description.trim())) {
-      alert("Please fill in all task fields");
+      toast.error("Please fill in all task fields");
       return;
     }
 

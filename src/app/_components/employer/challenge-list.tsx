@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import { toast } from "sonner";
 import { Button } from "~/app/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
 import { Badge } from "~/app/_components/ui/badge";
@@ -44,7 +45,7 @@ export function ChallengeList() {
     try {
       await deleteMutation.mutateAsync({ id });
     } catch {
-      alert("Failed to delete challenge. It may have existing submissions.");
+      toast.error("Failed to delete challenge. It may have existing submissions.");
     } finally {
       setDeletingId(null);
     }

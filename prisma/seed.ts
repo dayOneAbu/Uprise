@@ -145,7 +145,7 @@ async function main() {
     data: {
       id: 'demo_employer',
       name: 'Sarah Johnson',
-      email: 'employer@UPrise.demo',
+      email: 'employer@uprise.demo',
       emailVerified: true,
       role: UserRole.EMPLOYER,
       successRate: 95,
@@ -174,14 +174,14 @@ async function main() {
     data: { companyId: demoCompany.id }
   })
 
-  console.log('✅ Demo Employer: employer@UPrise.demo')
+  console.log('✅ Demo Employer: employer@uprise.demo')
 
   // Demo Candidate with skill scores
   const demoCandidate = await prisma.user.create({
     data: {
       id: 'demo_candidate',
       name: 'Alex Rivera',
-      email: 'candidate@UPrise.demo',
+      email: 'candidate@uprise.demo',
       emailVerified: true,
       role: UserRole.CANDIDATE,
       successRate: 88,
@@ -234,7 +234,7 @@ async function main() {
     }
   })
 
-  console.log('✅ Demo Candidate: candidate@UPrise.demo')
+  console.log('✅ Demo Candidate: candidate@uprise.demo')
   console.log('   Password: Set via Better Auth (magic link or configured)')
 
   // Add demo users to array for password setup
@@ -518,7 +518,7 @@ async function main() {
       `Join our ${companyId.replace('company_', '')} team as a ${title.toLowerCase()}. You'll work on exciting projects and learn from experienced mentors.`,
       `We're looking for a motivated ${title.toLowerCase()} to join our growing team. This is a great opportunity to gain hands-on experience.`,
       `Exciting internship opportunity for ${title.toLowerCase()}. You'll contribute to real projects and develop valuable skills.`,
-      `Perfect for students interested in ${title.split(' ')[0]?.toLowerCase() || 'software'} development. Work with cutting-edge technology and learn industry best practices.`,
+      `Perfect for students interested in ${title.split(' ')[0]?.toLowerCase() ?? 'software'} development. Work with cutting-edge technology and learn industry best practices.`,
       `Join our innovative team as a ${title.toLowerCase()}. You'll get exposure to the latest technologies and methodologies.`
     ]
 
@@ -706,9 +706,9 @@ async function main() {
   console.log('- 150 Applications')
   console.log('- 40 Contracts with reviews')
   console.log('\n👤 Demo Accounts (for showcase):')
-  console.log('  • Employer: employer@UPrise.demo / 123456789')
+  console.log('  • Employer: employer@uprise.demo / 123456789')
   console.log('    Company: TechCorp Solutions')
-  console.log('  • Candidate: candidate@UPrise.demo / 123456789')
+  console.log('  • Candidate: candidate@uprise.demo / 123456789')
   console.log('    Skills: React (92%), JavaScript (88%), TypeScript (90%), Node.js (85%)')
   console.log('\n🔑 All accounts use password: 123456789')
   console.log('🚀 Ready for demo!')

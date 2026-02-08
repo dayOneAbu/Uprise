@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { createAuthClient } from "better-auth/react";
 import type { Auth } from "~/server/better-auth/config";
 

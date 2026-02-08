@@ -17,7 +17,7 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
-import { Toaster } from "sonner";
+import { Toaster } from "~/app/_components/ui/toaster";
 
 export default function RootLayout({
   children,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
+import { toast } from "sonner";
 import { Button } from "~/app/_components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "~/app/_components/ui/card";
 import { Textarea } from "~/app/_components/ui/textarea";
@@ -27,7 +28,7 @@ export function ChallengeTakeForm({ challengeId }: ChallengeTakeFormProps) {
       router.push("/candidate/challenges");
     },
     onError: (error) => {
-      alert(error.message);
+      toast.error(error.message);
       setIsSubmitting(false);
     },
   });
@@ -71,7 +72,7 @@ export function ChallengeTakeForm({ challengeId }: ChallengeTakeFormProps) {
     // Check all tasks have responses
     const missingTasks = challenge.tasks.filter((t: { id: string }) => !responses[t.id]?.trim());
     if (missingTasks.length > 0) {
-      alert(`Please complete all tasks before submitting. Missing: ${missingTasks.length} task(s)`);
+      toast.warning(`Please complete all tasks before submitting. Missing: ${missingTasks.length} task(s)`);
       return;
     }
 

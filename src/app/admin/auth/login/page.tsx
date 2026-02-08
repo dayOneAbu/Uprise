@@ -99,8 +99,9 @@ export default function AdminLoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
+    const normalizedEmail = data.email.trim().toLowerCase();
     await authClient.signIn.email({
-        email: data.email,
+        email: normalizedEmail,
         password: data.password,
         callbackURL: "/admin", 
     }, {
